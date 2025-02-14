@@ -1,0 +1,60 @@
+<resources>
+    <string name="app_name">Hide and Seek</string>
+    <string name="welcome_1">Welcome to Hide and Seek!</string>
+    <string name="welcome_2">This app is used to draw cards when you are the hider. Start a new round, then draw cards as the game progresses.</string>
+    <string name="start_round">Start a round!</string>
+    <string name="back_button">Back</string>
+    <string name="hider_deck">Hider Deck</string>
+    <string name="draw_cards">Draw cards</string>
+    <string name="draw_3_pick_1">Draw 3 pick 1</string>
+    <string name="draw_2_pick_1">Draw 2 pick 1</string>
+    <string name="draw_1">Draw 1</string>
+    <string name="delete_card">Delete card</string>
+    <string name="card">Card</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="no_cards">You have no cards!</string>
+    <string name="select_card">Pick a card!</string>
+    <string name="delete_card_question">Are you sure you want to delete \"%1$s\"?</string>
+    <string name="too_many_cards">You have too many cards! Delete at least one to continue.</string>
+    <string name="overflowing_chalice_active">Curse of the overflowing chalice is active!</string>
+    
+    <string name="curse_bad_influencer">Curse of the bad influencer</string>
+    <string name="curse_bird_guide">Curse of the bird guide</string>
+    <string name="curse_distant_cuisine">Curse of the distant cuisine</string>
+    <string name="curse_drained_brain">Curse of the drained brain</string>
+    <string name="curse_egg_partner">Curse of the egg partner</string>
+    <string name="curse_endless_tumble">Curse of the endless tumble</string>
+    <string name="curse_evergrowing_economy">Curse of the evergrowing economy</string>
+    <string name="curse_hidden_hangman">Curse of the hidden hangman</string>
+    <string name="curse_gamblers_feet">Curse of the gambler\'s feet</string>
+    <string name="curse_impossible_riddle">Curse of the impossible riddle</string>
+    <string name="curse_impressionable_consumer">Curse of the impressionable consumer</string>
+    <string name="curse_impulsive_buyer">Curse of the impulsive buyer</string>
+    <string name="curse_jammed_door">Curse of the jammed door</string>
+    <string name="curse_luxury_car">Curse of the luxury car</string>
+    <string name="curse_mediocre_travel_agent">Curse of the mediocre travel agent</string>
+    <string name="curse_music_guru">Curse of the music guru</string>
+    <string name="curse_neverending_forest">Curse of the neverending forest</string>
+    <string name="curse_overflowing_chalice">Curse of the overflowing chalice</string>
+    <string name="curse_right_turn">Curse of the right turn</string>
+    <string name="curse_spotty_memory">Curse of the spotty memory</string>
+    <string name="curse_u_turn">Curse of the U-turn</string>
+    <string name="curse_unguided_tourist">Curse of the unguided tourist</string>
+    <string name="curse_urban_explorer">Curse of the urban explorer</string>
+    <string name="curse_voodoo_doll">Curse of the voodoo doll</string>
+    <string name="curse_zoologist">Curse of the zoologist</string>
+
+    <string name="randomize_question">Randomize question</string>
+    <string name="veto_question">Veto question</string>
+    <string name="duplicate_card">Duplicate another card</string>
+    <string name="move">Move</string>
+    <string name="discard_1_draw_2">Discard 1 draw 2</string>
+    <string name="discard_2_draw_3">Discard 2 draw 3</string>
+
+    <string name="three_min_bonus">3 minute time bonus</string>
+    <string name="five_min_bonus">5 minute time bonus</string>
+    <string name="ten_min_bonus">10 minute time bonus</string>
+    <string name="fifteen_min_bonus">15 minute time bonus</string>
+    <string name="twenty_min_bonus">20 minute time bonus</string>
+</resources>
