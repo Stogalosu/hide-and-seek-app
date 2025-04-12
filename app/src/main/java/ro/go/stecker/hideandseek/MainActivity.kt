@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import ro.go.stecker.hideandseek.ui.HideAndSeekApp
 import ro.go.stecker.hideandseek.ui.theme.HideAndSeekTheme
 
 class MainActivity : ComponentActivity() {

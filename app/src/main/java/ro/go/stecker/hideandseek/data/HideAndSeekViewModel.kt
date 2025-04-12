@@ -1,24 +1,60 @@
 package ro.go.stecker.hideandseek.data
 
-import androidx.compose.runtime.currentRecomposeScope
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import ro.go.stecker.hideandseek.data.database.DeckRepository
 import ro.go.stecker.hideandseek.ui.DrawType
 import kotlin.random.Random.Default.nextInt
 
-class HideAndSeekViewModel: ViewModel() {
+class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRepository: PreferencesRepository): ViewModel() {
 
     private val _uiState = MutableStateFlow(HideAndSeekUiState())
     val uiState: StateFlow<HideAndSeekUiState> = _uiState.asStateFlow()
 
+    var deckUiState: StateFlow<DeckUiState> =
+        deckRepository.getAllDrawnCardsStream().map { DeckUiState(it) }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = DeckUiState()
+            )
+
+    private val _preferencesUiState = MutableStateFlow(PreferencesUiState())
+    val preferencesUiState: StateFlow<PreferencesUiState> = _preferencesUiState.asStateFlow()
+
     fun init() {
+        viewModelScope.launch {
+            preferencesRepository.isGameStarted
+                .map { PreferencesUiState(it) }
+                .collect { value -> _preferencesUiState.value = value}
+        }
         _uiState.update { currentState ->
             currentState.copy(
                 cardsList = CardsRepository.toMutableList()
             )
+        }
+    }
+
+    suspend fun initAtGameStart() {
+        if(preferencesUiState.value.isGameStarted == GameState.NotStarted) {
+            deckRepository.clearDeck()
+            preferencesRepository.startGame()
+        }
+        deckRepository.setCardList(_uiState.value.cardsList)
+    }
+
+    fun endGame() {
+        viewModelScope.launch {
+            preferencesRepository.endGame()
         }
     }
 
@@ -34,21 +70,26 @@ class HideAndSeekViewModel: ViewModel() {
         _uiState.update { currentState ->
             currentState.copy(
                 isDeleteMenuActive = !currentState.isDeleteMenuActive
-
             )
         }
     }
 
-    fun setIndexToDelete(card: Int) {
+    fun setIdToDelete(cardId: Int) {
         _uiState.update { currentState ->
             currentState.copy(
-                cardToDelete = card
+                idToDelete = cardId
             )
         }
     }
 
-    fun deleteCardAtIndex(index: Int) {
-        _uiState.value.cardDeck.removeAt(index)
+    suspend fun deleteCard(cardId: Int) {
+//        val cardToDelete = _uiState.value.cardDeck.indexOf(_uiState.value.cardsList[cardId])
+
+//        _uiState.value.cardDeck.removeAt(cardToDelete)
+        deckRepository.deleteDrawnCard(cardId)
+
+        Log.d("cardDeckSize", deckUiState.value.cardDeck.size.toString())
+        Log.d("index", cardId.toString())
     }
 
     fun updateSelectCardText(state: Boolean) {
@@ -70,7 +111,7 @@ class HideAndSeekViewModel: ViewModel() {
     fun getRandomCard(): Card {
         if(_uiState.value.cardsList.last().probability > 1) {
             val random = nextInt(1, _uiState.value.cardsList.last().probability)
-            var index = 0
+            var index = 1
             while (_uiState.value.cardsList[index].probability < random && index < _uiState.value.cardsList.lastIndex) index++
             if (_uiState.value.cardsList[index].probability >= random) return _uiState.value.cardsList[index]
             else return getRandomCard()
@@ -79,8 +120,10 @@ class HideAndSeekViewModel: ViewModel() {
     
     fun drawTempCards() {
         updateSelectCardText(true)
+
         var previousCard: Card = Card()
         var card: Card = Card()
+
         for(c in 1.._uiState.value.selectedDrawType.draw) {
             card = getRandomCard()
             while(card == previousCard) card = getRandomCard()
@@ -92,15 +135,19 @@ class HideAndSeekViewModel: ViewModel() {
             updateOverflowingChalice()
         }
     }
-    
-    fun addCardToDeck(card: Card) {
-        _uiState.value.cardDeck.add(card)
-        for(card in _uiState.value.drawnTempCards) {
-            for (i in _uiState.value.cardsList.indexOf(card).._uiState.value.cardsList.lastIndex) {
-                if (_uiState.value.cardsList[i].probability > 0)
-                    _uiState.value.cardsList[i].probability--
-            }
-        }
 
+    suspend fun addCardToDeck(card: Card) {
+//        _uiState.value.cardDeck.add(card)
+
+        deckRepository.insertDrawnCard(card.toDrawnCard())
+        deckRepository.updateCardProbability(card)
+
+//        for(card in _uiState.value.drawnTempCards) {
+//            for (i in _uiState.value.cardsList.indexOf(card).._uiState.value.cardsList.lastIndex) {
+//                if (_uiState.value.cardsList[i].probability > 0)
+//                    _uiState.value.cardsList[i].probability--
+//            }
+//        }
     }
+
 }

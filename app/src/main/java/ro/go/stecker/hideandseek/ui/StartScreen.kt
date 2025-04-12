@@ -1,8 +1,7 @@
 package ro.go.stecker.hideandseek.ui
 
-import androidx.annotation.Dimension
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -10,38 +9,51 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import ro.go.stecker.hideandseek.HideAndSeekTopAppBar
+import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import ro.go.stecker.hideandseek.AppViewModelProvider
 import ro.go.stecker.hideandseek.R
 import ro.go.stecker.hideandseek.data.HideAndSeekUiState
 import ro.go.stecker.hideandseek.data.HideAndSeekViewModel
+import ro.go.stecker.hideandseek.getActivity
+import ro.go.stecker.hideandseek.ui.navigation.HideAndSeekScreen
 
 @Composable
 fun StartScreen(
-    navigateToDeck: () -> Unit,
+    onButtonClick: () -> Unit,
     viewModel: HideAndSeekViewModel,
     uiState: HideAndSeekUiState,
     modifier: Modifier = Modifier
 ) {
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+
+    BackHandler() {
+        context.getActivity()?.finish()
+    }
+
     Scaffold(
         modifier = modifier,
         topBar = {
             HideAndSeekTopAppBar(
                 title = stringResource(R.string.app_name),
                 canNavigateBack = false,
+                currentScreen = HideAndSeekScreen.StartScreen,
+                viewModel = viewModel
             )
         }
-    ) {innerPadding ->
+    ) { innerPadding ->
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
@@ -63,12 +75,15 @@ fun StartScreen(
             Spacer(modifier = Modifier.weight(1f))
             Button(
                 onClick = {
-                    navigateToDeck()
-                    viewModel.init()
+                    coroutineScope.launch {
+                        viewModel.initAtGameStart()
+                        delay(200)
+                        onButtonClick()
+                    }
                 },
 
             ) {
-                Text(stringResource(R.string.start_round), fontFamily = infraFontFamily)
+                Text(stringResource(R.string.start_game), fontFamily = infraFontFamily)
             }
             Spacer(modifier = Modifier.height(64.dp))
         }
@@ -79,5 +94,5 @@ fun StartScreen(
 @Composable
 @Preview
 fun StartScreenPreview() {
-    StartScreen({}, HideAndSeekViewModel(), HideAndSeekUiState())
+    StartScreen({}, viewModel(factory = AppViewModelProvider.Factory), HideAndSeekUiState())
 }

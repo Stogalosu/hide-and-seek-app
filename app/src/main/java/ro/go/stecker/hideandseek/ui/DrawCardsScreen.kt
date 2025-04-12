@@ -1,12 +1,6 @@
 package ro.go.stecker.hideandseek.ui
 
 import androidx.annotation.StringRes
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
@@ -31,6 +24,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,10 +35,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import ro.go.stecker.hideandseek.HideAndSeekTopAppBar
+import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
+import ro.go.stecker.hideandseek.AppViewModelProvider
 import ro.go.stecker.hideandseek.R
 import ro.go.stecker.hideandseek.data.HideAndSeekUiState
 import ro.go.stecker.hideandseek.data.HideAndSeekViewModel
+import ro.go.stecker.hideandseek.ui.navigation.HideAndSeekScreen
 
 
 enum class DrawType(val draw: Int, val pick: Int) {
@@ -66,7 +63,9 @@ fun DrawCardsScreen(
             HideAndSeekTopAppBar(
                 title = stringResource(R.string.draw_cards),
                 canNavigateBack = true,
-                navigateUp = navigateUp
+                navigateUp = navigateUp,
+                currentScreen = HideAndSeekScreen.DrawCards,
+                viewModel = viewModel
             )
         }
     ) {innerPadding ->
@@ -88,6 +87,8 @@ fun DrawCards(
     contentPadding: PaddingValues = PaddingValues(0.dp),
     modifier: Modifier = Modifier
 ) {
+    val coroutineScope = rememberCoroutineScope()
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Bottom,
@@ -96,10 +97,8 @@ fun DrawCards(
             .fillMaxSize()
     ) {
         Spacer(modifier = Modifier.weight(1f))
-        LazyRow() {
+        LazyRow {
             items(items = uiState.drawnTempCards) { item ->
-
-
                 Card(
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer
@@ -108,7 +107,9 @@ fun DrawCards(
                         .padding(8.dp)
                         .clickable(
                             onClick = {
-                                viewModel.addCardToDeck(item)
+                                coroutineScope.launch {
+                                    viewModel.addCardToDeck(item)
+                                }
                                 navigateUp()
                             }
                         )
@@ -142,7 +143,7 @@ fun DrawCards(
 //        }
 
 
-        if (uiState.tooManyCards) {
+        if (uiState.cardDeck.size >= 6) {
             TooManyCardsText()
         } else if (uiState.selectCard)
             SelectCardText()
@@ -257,5 +258,5 @@ fun TooManyCardsText() {
 @Preview
 @Composable
 fun DrawCardsScreenPreview() {
-    DrawCardsScreen(HideAndSeekViewModel(), HideAndSeekUiState(), {})
+    DrawCardsScreen(viewModel(factory = AppViewModelProvider.Factory), HideAndSeekUiState(), {})
 }

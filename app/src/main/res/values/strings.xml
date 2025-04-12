@@ -2,8 +2,13 @@
     <string name="app_name">Hide and Seek</string>
     <string name="welcome_1">Welcome to Hide and Seek!</string>
     <string name="welcome_2">This app is used to draw cards when you are the hider. Start a new round, then draw cards as the game progresses.</string>
-    <string name="start_round">Start a round!</string>
+    <string name="start_game">Start the game!</string>
+    <string name="more_options">More options</string>
+    <string name="end_game">End game</string>
+    <string name="end_game_question">Are you sure you want to end this game?</string>
+    <string name="confirm">Confirm</string>
     <string name="back_button">Back</string>
+    <string name="loading">Loading</string>
     <string name="hider_deck">Hider Deck</string>
     <string name="draw_cards">Draw cards</string>
     <string name="draw_3_pick_1">Draw 3 pick 1</string>
@@ -18,6 +23,10 @@
     <string name="delete_card_question">Are you sure you want to delete \"%1$s\"?</string>
     <string name="too_many_cards">You have too many cards! Delete at least one to continue.</string>
     <string name="overflowing_chalice_active">Curse of the overflowing chalice is active!</string>
+    <string name="choose_nr_games">Choose number of games played at the same time:</string>
+    <string name="nr_games">%1$s games</string>
+    <string name="nr_games_one">1 game</string>
+    <string name="game_label">Game %1$s</string>
     
     <string name="curse_bad_influencer">Curse of the bad influencer</string>
     <string name="curse_bird_guide">Curse of the bird guide</string>

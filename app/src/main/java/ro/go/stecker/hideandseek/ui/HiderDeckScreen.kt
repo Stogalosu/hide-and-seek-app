@@ -1,18 +1,12 @@
 package ro.go.stecker.hideandseek.ui
 
 import android.content.res.Configuration
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import ro.go.stecker.hideandseek.R
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,87 +23,126 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import ro.go.stecker.hideandseek.HideAndSeekTopAppBar
 import  androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
-import ro.go.stecker.hideandseek.data.CardsRepository
+import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
+import ro.go.stecker.hideandseek.AppViewModelProvider
 import ro.go.stecker.hideandseek.data.HideAndSeekUiState
 import ro.go.stecker.hideandseek.data.HideAndSeekViewModel
+import ro.go.stecker.hideandseek.data.CardsRepository
+import ro.go.stecker.hideandseek.data.DeckUiState
+import ro.go.stecker.hideandseek.data.GameState
+import ro.go.stecker.hideandseek.data.PreferencesUiState
+import ro.go.stecker.hideandseek.data.getCardWithId
+import ro.go.stecker.hideandseek.getActivity
+import ro.go.stecker.hideandseek.ui.navigation.HideAndSeekScreen
 
 @Composable
 fun HiderDeckScreen(
     onDrawCards: () -> Unit,
+    onNavigateToStartScreen: () -> Unit,
     viewModel: HideAndSeekViewModel,
     uiState: HideAndSeekUiState,
+    deckUiState: DeckUiState,
+    preferencesUiState: PreferencesUiState,
     modifier: Modifier = Modifier
 ) {
     uiState.drawnTempCards.clear()
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            HideAndSeekTopAppBar(
-                title = stringResource(R.string.hider_deck),
-                canNavigateBack = false
-            )
-        },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = onDrawCards,
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Rounded.Add, contentDescription = stringResource(R.string.draw_cards))
-                    Text(
-                        text = stringResource(R.string.draw_cards),
-                        fontFamily = infraFontFamily,
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
-                }
-            }
-        },
-    ) {innerPadding ->
-        HiderDeck(
-            viewModel = viewModel,
-            uiState = uiState,
-            contentPadding = if(isPortrait) PaddingValues() else innerPadding
-        )
+    val context = LocalContext.current
 
+    BackHandler() {
+        context.getActivity()?.finish()
+    }
+
+    LaunchedEffect(preferencesUiState.isGameStarted) {
+        if(preferencesUiState.isGameStarted == GameState.NotStarted)
+            onNavigateToStartScreen()
+    }
+
+    when(preferencesUiState.isGameStarted) {
+        GameState.Started -> {
+            Scaffold(
+                modifier = modifier,
+                topBar = {
+                    HideAndSeekTopAppBar(
+                        title = stringResource(R.string.hider_deck),
+                        canNavigateBack = false,
+                        currentScreen = HideAndSeekScreen.HiderDeck,
+                        viewModel = viewModel
+                    )
+                },
+                floatingActionButton = {
+                    ExtendedFloatingActionButton(
+                        onClick = onDrawCards,
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Rounded.Add, contentDescription = stringResource(R.string.draw_cards))
+                            Text(
+                                text = stringResource(R.string.draw_cards),
+                                fontFamily = infraFontFamily,
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                        }
+                    }
+                },
+            ) {innerPadding ->
+                HiderDeck(
+                    viewModel = viewModel,
+                    uiState = uiState,
+                    deckUiState = deckUiState,
+                    contentPadding = if(isPortrait) PaddingValues() else innerPadding
+                )
+            }
+        }
+
+        else -> {
+            viewModel.init()
+            LoadingScreen()
+        }
     }
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HiderDeck(
     viewModel: HideAndSeekViewModel,
     uiState: HideAndSeekUiState,
+    deckUiState: DeckUiState,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     modifier: Modifier = Modifier
 ) {
+    val coroutineScope = rememberCoroutineScope()
+
     if(uiState.isDeleteMenuActive) {
         AlertDialog(
             onDismissRequest = { viewModel.updateDeleteMenu() },
             icon = { Icon(Icons.Rounded.Delete, contentDescription = stringResource(R.string.delete_card)) },
             title = { Text(stringResource(R.string.delete_card)) },
-            text = { Text(stringResource(R.string.delete_card_question, stringResource(uiState.cardDeck[uiState.cardToDelete].name))) },
+            text = { Text(stringResource(R.string.delete_card_question, stringResource(deckUiState.getCardWithId(uiState.idToDelete).name))) },
             confirmButton = {
                 TextButton(
                     onClick = {
                         viewModel.updateDeleteMenu()
-                        if(uiState.cardDeck[uiState.cardToDelete].name == R.string.curse_overflowing_chalice) viewModel.updateOverflowingChalice()
-                        viewModel.deleteCardAtIndex(uiState.cardToDelete)
+                        if(deckUiState.getCardWithId(uiState.idToDelete).name == R.string.curse_overflowing_chalice) viewModel.updateOverflowingChalice()
+                        coroutineScope.launch {
+                            viewModel.deleteCard(uiState.idToDelete)
+                        }
                     }
                 ) {
                     Text(stringResource(R.string.delete))
@@ -122,7 +155,8 @@ fun HiderDeck(
             }
         )
     }
-    if(!uiState.cardDeck.isEmpty()) {
+
+    if(!deckUiState.cardDeck.isEmpty()) {
         LazyRow(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
@@ -130,7 +164,7 @@ fun HiderDeck(
                 .padding(contentPadding)
                 .fillMaxSize()
         ) {
-            items(items = uiState.cardDeck) { item ->
+            items(items = deckUiState.cardDeck) { item ->
                 Card(
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer
@@ -140,7 +174,7 @@ fun HiderDeck(
                         .clickable(
                             onClick = {
                                 viewModel.updateDeleteMenu()
-                                viewModel.setIndexToDelete(uiState.cardDeck.indexOf(item))
+                                viewModel.setIdToDelete(item.id)
                             }
                         )
                 ) {
@@ -176,5 +210,5 @@ fun HiderDeck(
 @Preview
 @Composable
 fun HiderDeckScreenPreview() {
-    HiderDeckScreen({ CardsRepository[0] }, HideAndSeekViewModel(), HideAndSeekUiState(), )
+    HiderDeckScreen({ CardsRepository[0] }, {}, viewModel(factory = AppViewModelProvider.Factory), HideAndSeekUiState(), DeckUiState(), PreferencesUiState())
 }
