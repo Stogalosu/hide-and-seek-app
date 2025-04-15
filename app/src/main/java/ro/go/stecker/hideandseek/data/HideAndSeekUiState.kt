@@ -4,7 +4,9 @@ import ro.go.stecker.hideandseek.ui.DrawType
 
 data class HideAndSeekUiState(
     val selectedDrawType: DrawType = DrawType.Pick1,
-    val isDeleteMenuActive: Boolean = false,
+    val deleteCardDialog: Boolean = false,
+    val noCardsDialog: Boolean = false,
+    val tooManyCardsDialog: Boolean = false,
     val idToDelete: Int = 0,
     val cardDeck: MutableList<Card> = mutableListOf<Card>(),
     val drawnTempCards: List<Card> = listOf<Card>(),

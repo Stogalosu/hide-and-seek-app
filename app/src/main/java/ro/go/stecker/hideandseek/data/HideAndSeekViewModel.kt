@@ -17,6 +17,10 @@ import kotlin.random.Random.Default.nextInt
 
 class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRepository: PreferencesRepository): ViewModel() {
 
+    /*
+        StateFlow declarations
+     */
+
     private val _uiState = MutableStateFlow(HideAndSeekUiState())
     val uiState: StateFlow<HideAndSeekUiState> = _uiState.asStateFlow()
 
@@ -34,6 +38,10 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
 
     private val _preferencesUiState = MutableStateFlow(PreferencesUiState())
     val preferencesUiState: StateFlow<PreferencesUiState> = _preferencesUiState.asStateFlow()
+
+    /*
+        Game state methods
+     */
 
     fun init() {
         viewModelScope.launch {
@@ -57,6 +65,10 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
         }
     }
 
+    /*
+        UI methods
+     */
+
     fun updateDrawType(drawType: DrawType) {
         _uiState.update { currentState ->
             currentState.copy(
@@ -65,11 +77,21 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
         }
     }
 
-    fun updateDeleteMenu() {
+    fun updateDeleteCardDialog() {
         _uiState.update { currentState ->
-            currentState.copy(
-                isDeleteMenuActive = !currentState.isDeleteMenuActive
-            )
+            currentState.copy(deleteCardDialog = !currentState.deleteCardDialog)
+        }
+    }
+
+    fun updateNoCardsDialog() {
+        _uiState.update { currentState ->
+            currentState.copy(noCardsDialog = !currentState.noCardsDialog)
+        }
+    }
+
+    fun updateTooManyCardsDialog() {
+        _uiState.update { currentState ->
+            currentState.copy(tooManyCardsDialog = !currentState.tooManyCardsDialog)
         }
     }
 
@@ -81,9 +103,6 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
         }
     }
 
-    suspend fun deleteCard(cardId: Int) = deckRepository.deleteDrawnCard(cardId)
-
-
     fun updateSelectCardText(state: Boolean) {
         _uiState.update { currentState ->
             currentState.copy(
@@ -92,13 +111,9 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
         }
     }
 
-    fun updateOverflowingChalice() {
-        _uiState.update { currentState ->
-            currentState.copy(
-                overflowingChalice = currentState.overflowingChalice + 1
-            )
-        }
-    }
+    /*
+        Card deck and player deck methods
+     */
 
     suspend fun pickRandomCard(): Card {
         var totalWeight = deckUiState.value.cardDeck.sumOf { it.probability }
@@ -136,11 +151,21 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
         }
     }
 
-    suspend fun addCardToDeck(card: Card) = deckRepository.insertDrawnCard(card.toDrawnCard())
-
     fun clearTempCards() {
         _uiState.update { currentState ->
             currentState.copy(drawnTempCards = listOf())
         }
     }
+
+    fun updateOverflowingChalice() {
+        _uiState.update { currentState ->
+            currentState.copy(
+                overflowingChalice = currentState.overflowingChalice + 1
+            )
+        }
+    }
+
+    suspend fun addCardToDeck(card: Card) = deckRepository.insertDrawnCard(card.toDrawnCard())
+
+    suspend fun deleteCard(cardId: Int) = deckRepository.deleteDrawnCard(cardId)
 }

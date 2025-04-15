@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Scaffold
@@ -37,6 +38,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 import ro.go.stecker.hideandseek.AppViewModelProvider
@@ -129,16 +131,16 @@ fun HiderDeck(
 ) {
     val coroutineScope = rememberCoroutineScope()
 
-    if(uiState.isDeleteMenuActive) {
+    if(uiState.deleteCardDialog) {
         AlertDialog(
-            onDismissRequest = { viewModel.updateDeleteMenu() },
+            onDismissRequest = { viewModel.updateDeleteCardDialog() },
             icon = { Icon(Icons.Rounded.Delete, contentDescription = stringResource(R.string.delete_card)) },
             title = { Text(stringResource(R.string.delete_card)) },
             text = { Text(stringResource(R.string.delete_card_question, stringResource(deckUiState.getCardWithId(uiState.idToDelete).name))) },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        viewModel.updateDeleteMenu()
+                        viewModel.updateDeleteCardDialog()
                         if(deckUiState.getCardWithId(uiState.idToDelete).name == R.string.curse_overflowing_chalice) viewModel.updateOverflowingChalice()
                         coroutineScope.launch {
                             viewModel.deleteCard(uiState.idToDelete)
@@ -149,8 +151,38 @@ fun HiderDeck(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { viewModel.updateDeleteMenu() }) {
+                TextButton(onClick = { viewModel.updateDeleteCardDialog() }) {
                     Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    if(uiState.noCardsDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.updateNoCardsDialog() },
+            icon = { Icon(Icons.Rounded.Warning, contentDescription = stringResource(R.string.no_cards_left)) },
+            title = { Text(stringResource(R.string.no_cards_left)) },
+            text = { Text(stringResource(R.string.no_cards_dialog)) },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { viewModel.updateNoCardsDialog() }) {
+                    Text(stringResource(R.string.got_it))
+                }
+            }
+        )
+    }
+
+    if(uiState.tooManyCardsDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.updateTooManyCardsDialog() },
+            icon = { Icon(Icons.Rounded.Warning, contentDescription = stringResource(R.string.no_cards_left)) },
+            title = { Text(stringResource(R.string.too_many_cards), textAlign = TextAlign.Center) },
+            text = { Text(stringResource(R.string.too_many_cards_dialog)) },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { viewModel.updateTooManyCardsDialog() }) {
+                    Text(stringResource(R.string.got_it))
                 }
             }
         )
@@ -173,7 +205,7 @@ fun HiderDeck(
                         .padding(8.dp)
                         .clickable(
                             onClick = {
-                                viewModel.updateDeleteMenu()
+                                viewModel.updateDeleteCardDialog()
                                 viewModel.setIdToDelete(item.id)
                             }
                         )
