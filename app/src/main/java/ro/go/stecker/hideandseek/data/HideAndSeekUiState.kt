@@ -6,19 +6,19 @@ data class HideAndSeekUiState(
     val selectedDrawType: DrawType = DrawType.Pick1,
     val isDeleteMenuActive: Boolean = false,
     val idToDelete: Int = 0,
-    val cardsList: MutableList<Card> = mutableListOf<Card>(),
     val cardDeck: MutableList<Card> = mutableListOf<Card>(),
-    val drawnTempCards: MutableList<Card> = mutableListOf<Card>(),
+    val drawnTempCards: List<Card> = listOf<Card>(),
     val selectCard: Boolean = false,
     val overflowingChalice: Int = 0
 )
 
 data class DeckUiState(
+    val playerDeck: List<Card> = listOf(),
     val cardDeck: List<Card> = listOf()
 )
 
 fun DeckUiState.getCardWithId(cardId: Int): Card {
-    return cardDeck[cardDeck.indexOf(CardsRepository[cardId])]
+    return playerDeck[playerDeck.indexOf(CardsRepository[cardId])]
 }
 
 data class PreferencesUiState(

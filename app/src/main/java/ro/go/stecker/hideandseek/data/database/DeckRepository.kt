@@ -9,13 +9,13 @@ import ro.go.stecker.hideandseek.data.toCard
 interface DeckRepository {
     suspend fun setCardList(cardList: List<Card>)
     suspend fun updateCardProbability(card: Card)
+    fun getCardDeckStream(): Flow<List<Card>>
 
     suspend fun insertDrawnCard(card: DrawnCard)
-//    suspend fun updateDrawnCard(card: DrawnCard)
     suspend fun deleteDrawnCard(id: Int)
     suspend fun clearDeck()
-    fun getDrawnCardStream(id: Int): Flow<DrawnCard>
-    fun getAllDrawnCardsStream(): Flow<List<Card>>
+//    fun getDrawnCardStream(id: Int): Flow<DrawnCard>
+    fun getPlayerDeckStream(): Flow<List<Card>>
 }
 
 class OfflineDeckRepository(private val cardDao: CardDao): DeckRepository {
@@ -28,17 +28,13 @@ class OfflineDeckRepository(private val cardDao: CardDao): DeckRepository {
     }
 
     override suspend fun updateCardProbability(card: Card) {
-        val maxId = cardDao.getMaxId()
         val cardId = card.id
+        val cardProbability = cardDao.getCardProbability(cardId)
 
-        for(id in cardId..maxId) {
-            val cardProbability = cardDao.getCardProbability(id)
-
-            if(cardProbability > 0) {
-                cardDao.updateCardProbability(id, cardProbability - 1)
-            }
-        }
+        cardDao.updateCardProbability(cardId, cardProbability - 1)
     }
+
+    override fun getCardDeckStream(): Flow<List<Card>> = cardDao.getCardDeckStream()
 
     /*
      *  Methods for "deck" table
@@ -49,10 +45,10 @@ class OfflineDeckRepository(private val cardDao: CardDao): DeckRepository {
 
     override suspend fun clearDeck() = cardDao.clearDeck()
 
-    override fun getDrawnCardStream(id: Int): Flow<DrawnCard> = cardDao.getDrawnCardStream(id)
+//    override fun getDrawnCardStream(id: Int): Flow<DrawnCard> = cardDao.getDrawnCardStream(id)
 
-    override fun getAllDrawnCardsStream(): Flow<List<Card>> =
-        cardDao.getAllDrawnCardsStream().map { drawnCardsList ->
+    override fun getPlayerDeckStream(): Flow<List<Card>> =
+        cardDao.getPlayerDeckStream().map { drawnCardsList ->
             drawnCardsList.map { drawnCard ->
                 drawnCard.toCard()
             }

@@ -19,11 +19,14 @@ interface CardDao {
     @Query("DELETE FROM card_list")
     suspend fun clearCardList()
 
-    @Query("SELECT id FROM card_list ORDER BY id DESC LIMIT 1")
-    suspend fun getMaxId(): Int
+//    @Query("SELECT id FROM card_list ORDER BY id DESC LIMIT 1")
+//    suspend fun getMaxId(): Int
 
-    @Query("SELECT probability FROM card_list WHERE id = :id")
+    @Query("SELECT probability FROM card_list WHERE id = :id LIMIT 1")
     suspend fun getCardProbability(id: Int): Int
+
+    @Query("SELECT * FROM card_list")
+    fun getCardDeckStream(): Flow<List<Card>>
 
     /*
      *  Methods for "deck" table
@@ -40,9 +43,9 @@ interface CardDao {
     @Query("DELETE FROM deck")
     suspend fun clearDeck()
 
-    @Query("SELECT * FROM deck WHERE id = :id")
-    fun getDrawnCardStream(id: Int): Flow<DrawnCard>
+//    @Query("SELECT * FROM deck WHERE id = :id")
+//    fun getDrawnCardStream(id: Int): Flow<DrawnCard>
 
     @Query("SELECT * FROM deck")
-    fun getAllDrawnCardsStream(): Flow<List<DrawnCard>>
+    fun getPlayerDeckStream(): Flow<List<DrawnCard>>
 }

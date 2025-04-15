@@ -23,7 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import  androidx.compose.material3.Card
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -60,12 +60,12 @@ fun HiderDeckScreen(
     preferencesUiState: PreferencesUiState,
     modifier: Modifier = Modifier
 ) {
-    uiState.drawnTempCards.clear()
+    viewModel.clearTempCards()
     val configuration = LocalConfiguration.current
     val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
     val context = LocalContext.current
 
-    BackHandler() {
+    BackHandler {
         context.getActivity()?.finish()
     }
 
@@ -156,7 +156,7 @@ fun HiderDeck(
         )
     }
 
-    if(!deckUiState.cardDeck.isEmpty()) {
+    if(!deckUiState.playerDeck.isEmpty()) {
         LazyRow(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
@@ -164,7 +164,7 @@ fun HiderDeck(
                 .padding(contentPadding)
                 .fillMaxSize()
         ) {
-            items(items = deckUiState.cardDeck) { item ->
+            items(items = deckUiState.playerDeck) { item ->
                 Card(
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer

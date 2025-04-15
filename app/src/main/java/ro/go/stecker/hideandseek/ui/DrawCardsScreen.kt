@@ -1,5 +1,6 @@
 package ro.go.stecker.hideandseek.ui
 
+import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -24,6 +25,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,9 +38,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ro.go.stecker.hideandseek.AppViewModelProvider
 import ro.go.stecker.hideandseek.R
+import ro.go.stecker.hideandseek.data.DeckUiState
 import ro.go.stecker.hideandseek.data.HideAndSeekUiState
 import ro.go.stecker.hideandseek.data.HideAndSeekViewModel
 import ro.go.stecker.hideandseek.ui.navigation.HideAndSeekScreen
@@ -54,6 +58,7 @@ enum class DrawType(val draw: Int, val pick: Int) {
 fun DrawCardsScreen(
     viewModel: HideAndSeekViewModel,
     uiState: HideAndSeekUiState,
+    deckUiState: DeckUiState,
     navigateUp: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -72,6 +77,7 @@ fun DrawCardsScreen(
         DrawCards(
             viewModel = viewModel,
             uiState = uiState,
+            deckUiState = deckUiState,
             navigateUp = navigateUp,
             contentPadding = innerPadding
         )
@@ -83,6 +89,7 @@ fun DrawCardsScreen(
 fun DrawCards(
     viewModel: HideAndSeekViewModel,
     uiState: HideAndSeekUiState,
+    deckUiState: DeckUiState,
     navigateUp: () -> Unit,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     modifier: Modifier = Modifier
@@ -109,8 +116,10 @@ fun DrawCards(
                             onClick = {
                                 coroutineScope.launch {
                                     viewModel.addCardToDeck(item)
+                                    navigateUp()
+                                    delay(200)
+                                    viewModel.updateSelectCardText(false)
                                 }
-                                navigateUp()
                             }
                         )
                 ) {
@@ -143,7 +152,7 @@ fun DrawCards(
 //        }
 
 
-        if (uiState.cardDeck.size >= 6) {
+        if (deckUiState.playerDeck.size >= 6) {
             TooManyCardsText()
         } else if (uiState.selectCard)
             SelectCardText()
@@ -157,6 +166,8 @@ fun DrawTypeSelector(
     viewModel: HideAndSeekViewModel,
     uiState: HideAndSeekUiState
 ) {
+    val coroutineScope = rememberCoroutineScope()
+
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(8.dp)) {
             RadioButtonWithText(
@@ -190,7 +201,10 @@ fun DrawTypeSelector(
             }
             Button(
                 onClick = {
-                    viewModel.drawTempCards()
+                    coroutineScope.launch {
+                        viewModel.drawTempCards()
+                        viewModel.updateSelectCardText(true)
+                    }
                 }
             ) {
                 Text(stringResource(R.string.draw_cards), fontFamily = infraFontFamily)
@@ -258,5 +272,5 @@ fun TooManyCardsText() {
 @Preview
 @Composable
 fun DrawCardsScreenPreview() {
-    DrawCardsScreen(viewModel(factory = AppViewModelProvider.Factory), HideAndSeekUiState(), {})
+    DrawCardsScreen(viewModel(factory = AppViewModelProvider.Factory), HideAndSeekUiState(), DeckUiState(), {})
 }

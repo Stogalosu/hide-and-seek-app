@@ -1,12 +1,12 @@
 package ro.go.stecker.hideandseek.data
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -21,12 +21,16 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
     val uiState: StateFlow<HideAndSeekUiState> = _uiState.asStateFlow()
 
     var deckUiState: StateFlow<DeckUiState> =
-        deckRepository.getAllDrawnCardsStream().map { DeckUiState(it) }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(),
-                initialValue = DeckUiState()
-            )
+        combine(
+            deckRepository.getPlayerDeckStream(),
+            deckRepository.getCardDeckStream()
+        ) { playerDeck, cardDeck ->
+            DeckUiState(playerDeck = playerDeck, cardDeck = cardDeck)
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(),
+            initialValue = DeckUiState()
+        )
 
     private val _preferencesUiState = MutableStateFlow(PreferencesUiState())
     val preferencesUiState: StateFlow<PreferencesUiState> = _preferencesUiState.asStateFlow()
@@ -37,11 +41,6 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
                 .map { PreferencesUiState(it) }
                 .collect { value -> _preferencesUiState.value = value}
         }
-        _uiState.update { currentState ->
-            currentState.copy(
-                cardsList = CardsRepository.toMutableList()
-            )
-        }
     }
 
     suspend fun initAtGameStart() {
@@ -49,7 +48,7 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
             deckRepository.clearDeck()
             preferencesRepository.startGame()
         }
-        deckRepository.setCardList(_uiState.value.cardsList)
+        deckRepository.setCardList(CardsRepository)
     }
 
     fun endGame() {
@@ -82,15 +81,8 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
         }
     }
 
-    suspend fun deleteCard(cardId: Int) {
-//        val cardToDelete = _uiState.value.cardDeck.indexOf(_uiState.value.cardsList[cardId])
+    suspend fun deleteCard(cardId: Int) = deckRepository.deleteDrawnCard(cardId)
 
-//        _uiState.value.cardDeck.removeAt(cardToDelete)
-        deckRepository.deleteDrawnCard(cardId)
-
-        Log.d("cardDeckSize", deckUiState.value.cardDeck.size.toString())
-        Log.d("index", cardId.toString())
-    }
 
     fun updateSelectCardText(state: Boolean) {
         _uiState.update { currentState ->
@@ -108,46 +100,47 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
         }
     }
 
-    fun getRandomCard(): Card {
-        if(_uiState.value.cardsList.last().probability > 1) {
-            val random = nextInt(1, _uiState.value.cardsList.last().probability)
-            var index = 1
-            while (_uiState.value.cardsList[index].probability < random && index < _uiState.value.cardsList.lastIndex) index++
-            if (_uiState.value.cardsList[index].probability >= random) return _uiState.value.cardsList[index]
-            else return getRandomCard()
-        } else return Card()
-    }
-    
-    fun drawTempCards() {
-        updateSelectCardText(true)
+    suspend fun pickRandomCard(): Card {
+        var totalWeight = deckUiState.value.cardDeck.sumOf { it.probability }
+        var random: Int = 0
+        try {
+            random = nextInt(1, totalWeight)
+        } catch (e: IllegalArgumentException) {
 
-        var previousCard: Card = Card()
-        var card: Card = Card()
-
-        for(c in 1.._uiState.value.selectedDrawType.draw) {
-            card = getRandomCard()
-            while(card == previousCard) card = getRandomCard()
-            _uiState.value.drawnTempCards.add(card)
-            previousCard = card
         }
-        if(1 <= _uiState.value.overflowingChalice && _uiState.value.overflowingChalice <= 3) {
-            _uiState.value.drawnTempCards.add(getRandomCard())
+        var cumulative = 0
+        for(card in deckUiState.value.cardDeck) {
+            cumulative += card.probability
+            if(random <= cumulative) {
+                deckRepository.updateCardProbability(card)
+                return CardsRepository[card.id]
+            }
+        }
+
+        throw IllegalStateException("No cards left!")
+    }
+
+    suspend fun drawTempCards() {
+        var newCards = _uiState.value.drawnTempCards
+        repeat(_uiState.value.selectedDrawType.draw) {
+            newCards = newCards + pickRandomCard()
+        }
+
+        if (_uiState.value.overflowingChalice in 1..3) {
+            newCards = newCards + pickRandomCard()
             updateOverflowingChalice()
         }
+
+        _uiState.update {
+            it.copy(drawnTempCards = newCards)
+        }
     }
 
-    suspend fun addCardToDeck(card: Card) {
-//        _uiState.value.cardDeck.add(card)
+    suspend fun addCardToDeck(card: Card) = deckRepository.insertDrawnCard(card.toDrawnCard())
 
-        deckRepository.insertDrawnCard(card.toDrawnCard())
-        deckRepository.updateCardProbability(card)
-
-//        for(card in _uiState.value.drawnTempCards) {
-//            for (i in _uiState.value.cardsList.indexOf(card).._uiState.value.cardsList.lastIndex) {
-//                if (_uiState.value.cardsList[i].probability > 0)
-//                    _uiState.value.cardsList[i].probability--
-//            }
-//        }
+    fun clearTempCards() {
+        _uiState.update { currentState ->
+            currentState.copy(drawnTempCards = listOf())
+        }
     }
-
 }

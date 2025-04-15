@@ -76,10 +76,8 @@ fun HideAndSeekNavHost(
             DrawCardsScreen(
                 viewModel = hideAndSeekViewModel,
                 uiState = uiState,
-                navigateUp = {
-                    navController.popBackStack(route = HideAndSeekScreen.HiderDeck.name, inclusive = false)
-                    hideAndSeekViewModel.updateSelectCardText(false)
-                }
+                deckUiState = deckUiState,
+                navigateUp = { navController.popBackStack(route = HideAndSeekScreen.HiderDeck.name, inclusive = false) }
             )
         }
 
