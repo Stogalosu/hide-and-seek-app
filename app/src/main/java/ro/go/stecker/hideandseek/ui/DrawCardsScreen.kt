@@ -152,9 +152,10 @@ fun DrawCards(
 //        }
 
 
-        if (deckUiState.playerDeck.size >= 6) {
-            TooManyCardsText()
-        } else if (uiState.selectCard)
+//        if (deckUiState.playerDeck.size >= 6) {
+//            TooManyCardsText()
+//        } else
+        if (uiState.selectCard)
             SelectCardText()
         else DrawTypeSelector(viewModel, uiState)
     }
@@ -254,20 +255,20 @@ fun SelectCardText() {
     }
 }
 
-@Composable
-fun TooManyCardsText() {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = stringResource(R.string.too_many_cards),
-            textAlign = TextAlign.Center,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
-    }
-}
+//@Composable
+//fun TooManyCardsText() {
+//    Card(modifier = Modifier.fillMaxWidth()) {
+//        Text(
+//            text = stringResource(R.string.too_many_cards),
+//            textAlign = TextAlign.Center,
+//            fontSize = 24.sp,
+//            fontWeight = FontWeight.Bold,
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(16.dp)
+//        )
+//    }
+//}
 
 @Preview
 @Composable

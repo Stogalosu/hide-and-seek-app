@@ -62,7 +62,9 @@ fun HideAndSeekNavHost(
             HiderDeckScreen(
                 onDrawCards = {
                     hideAndSeekViewModel.updateSelectCardText(false)
-                    navController.navigate(HideAndSeekScreen.DrawCards.name)
+                    if (deckUiState.playerDeck.size >= 6)  hideAndSeekViewModel.updateTooManyCardsDialog()
+                    else if(deckUiState.cardDeck.sumOf { it.probability } <= 3) hideAndSeekViewModel.updateNoCardsDialog()
+                    else navController.navigate(HideAndSeekScreen.DrawCards.name)
                               },
                 onNavigateToStartScreen = { navController.navigate(HideAndSeekScreen.StartScreen.name) },
                 viewModel = hideAndSeekViewModel,
