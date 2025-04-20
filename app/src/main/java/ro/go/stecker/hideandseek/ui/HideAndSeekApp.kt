@@ -6,6 +6,8 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -17,7 +19,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.currentComposer
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -33,7 +34,6 @@ import ro.go.stecker.hideandseek.AppViewModelProvider
 import ro.go.stecker.hideandseek.R
 import ro.go.stecker.hideandseek.data.HideAndSeekViewModel
 import ro.go.stecker.hideandseek.ui.navigation.HideAndSeekScreen
-import kotlin.math.exp
 
 @Composable
 fun HideAndSeekApp(navController: NavHostController = rememberNavController()) {
@@ -109,10 +109,14 @@ fun TopAppBarDropdownMenu(
             title = { Text(stringResource(R.string.end_game)) },
             text = { Text(stringResource(R.string.end_game_question)) },
             confirmButton = {
-                TextButton(
+                Button(
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                    ),
                     onClick = { onEndGame() }
                 ) {
-                    Text(stringResource(R.string.confirm))
+                    Text(stringResource(R.string.end_game))
                 }
             },
             dismissButton = {
