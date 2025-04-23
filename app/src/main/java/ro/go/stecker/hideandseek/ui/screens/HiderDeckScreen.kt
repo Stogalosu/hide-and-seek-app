@@ -1,4 +1,4 @@
-package ro.go.stecker.hideandseek.ui
+package ro.go.stecker.hideandseek.ui.screens
 
 import androidx.compose.ui.graphics.Color
 import androidx.activity.compose.BackHandler
@@ -64,6 +64,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import ro.go.stecker.hideandseek.data.CardType
+import ro.go.stecker.hideandseek.ui.HideAndSeekTopAppBar
+import ro.go.stecker.hideandseek.ui.infraFontFamily
 
 val discardRed = Color(224, 65, 65)
 val confirmGreen = Color(87, 201, 90)

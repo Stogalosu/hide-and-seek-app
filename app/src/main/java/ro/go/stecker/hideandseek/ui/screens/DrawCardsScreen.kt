@@ -1,6 +1,5 @@
-package ro.go.stecker.hideandseek.ui
+package ro.go.stecker.hideandseek.ui.screens
 
-import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -25,7 +24,6 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,6 +43,8 @@ import ro.go.stecker.hideandseek.R
 import ro.go.stecker.hideandseek.data.DeckUiState
 import ro.go.stecker.hideandseek.data.HideAndSeekUiState
 import ro.go.stecker.hideandseek.data.HideAndSeekViewModel
+import ro.go.stecker.hideandseek.ui.HideAndSeekTopAppBar
+import ro.go.stecker.hideandseek.ui.infraFontFamily
 import ro.go.stecker.hideandseek.ui.navigation.HideAndSeekScreen
 
 

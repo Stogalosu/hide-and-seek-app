@@ -1,4 +1,4 @@
-package ro.go.stecker.hideandseek.ui
+package ro.go.stecker.hideandseek.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

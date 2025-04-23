@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ro.go.stecker.hideandseek.data.database.DeckRepository
-import ro.go.stecker.hideandseek.ui.DrawType
+import ro.go.stecker.hideandseek.ui.screens.DrawType
 import kotlin.random.Random.Default.nextInt
 
 class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRepository: PreferencesRepository): ViewModel() {

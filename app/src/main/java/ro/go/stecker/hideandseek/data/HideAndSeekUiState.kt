@@ -1,6 +1,6 @@
 package ro.go.stecker.hideandseek.data
 
-import ro.go.stecker.hideandseek.ui.DrawType
+import ro.go.stecker.hideandseek.ui.screens.DrawType
 
 data class HideAndSeekUiState(
     val selectedDrawType: DrawType = DrawType.Pick1,

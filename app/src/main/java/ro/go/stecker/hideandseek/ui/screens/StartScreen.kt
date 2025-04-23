@@ -1,4 +1,4 @@
-package ro.go.stecker.hideandseek.ui
+package ro.go.stecker.hideandseek.ui.screens
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
@@ -27,6 +27,8 @@ import ro.go.stecker.hideandseek.R
 import ro.go.stecker.hideandseek.data.HideAndSeekUiState
 import ro.go.stecker.hideandseek.data.HideAndSeekViewModel
 import ro.go.stecker.hideandseek.getActivity
+import ro.go.stecker.hideandseek.ui.HideAndSeekTopAppBar
+import ro.go.stecker.hideandseek.ui.infraFontFamily
 import ro.go.stecker.hideandseek.ui.navigation.HideAndSeekScreen
 
 @Composable

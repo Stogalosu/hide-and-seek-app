@@ -1,6 +1,5 @@
 package ro.go.stecker.hideandseek.ui.navigation
 
-import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
@@ -14,13 +13,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.dialog
 import ro.go.stecker.hideandseek.AppViewModelProvider
 import ro.go.stecker.hideandseek.R
 import ro.go.stecker.hideandseek.data.HideAndSeekViewModel
-import ro.go.stecker.hideandseek.ui.DrawCardsScreen
-import ro.go.stecker.hideandseek.ui.HiderDeckScreen
-import ro.go.stecker.hideandseek.ui.StartScreen
+import ro.go.stecker.hideandseek.ui.screens.DrawCardsScreen
+import ro.go.stecker.hideandseek.ui.screens.HiderDeckScreen
+import ro.go.stecker.hideandseek.ui.screens.StartScreen
 
 enum class HideAndSeekScreen(@StringRes val title: Int) {
     StartScreen(R.string.app_name),
