@@ -4,7 +4,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.activity.compose.BackHandler
 import androidx.annotation.IntRange
 import androidx.annotation.StringRes
-import androidx.compose.foundation.Image
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Column
 import ro.go.stecker.hideandseek.R
 import androidx.compose.foundation.layout.*
@@ -26,13 +28,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -44,13 +42,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
-import ro.go.stecker.hideandseek.AppViewModelProvider
 import ro.go.stecker.hideandseek.data.Card
 import ro.go.stecker.hideandseek.data.HideAndSeekUiState
 import ro.go.stecker.hideandseek.data.HideAndSeekViewModel
-import ro.go.stecker.hideandseek.data.CardsRepository
 import ro.go.stecker.hideandseek.data.DeckUiState
 import ro.go.stecker.hideandseek.data.GameState
 import ro.go.stecker.hideandseek.data.PreferencesUiState
@@ -64,20 +59,25 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import ro.go.stecker.hideandseek.data.CardType
+import ro.go.stecker.hideandseek.ui.CardImage
 import ro.go.stecker.hideandseek.ui.HideAndSeekTopAppBar
 import ro.go.stecker.hideandseek.ui.infraFontFamily
 
 val discardRed = Color(224, 65, 65)
 val confirmGreen = Color(87, 201, 90)
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun HiderDeckScreen(
     onDrawCards: () -> Unit,
     onNavigateToStartScreen: () -> Unit,
+    onDetailsClick: (Int) -> Unit,
     viewModel: HideAndSeekViewModel,
     uiState: HideAndSeekUiState,
     deckUiState: DeckUiState,
     preferencesUiState: PreferencesUiState,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier
 ) {
     viewModel.clearTempCards()
@@ -133,7 +133,10 @@ fun HiderDeckScreen(
                     uiState = uiState,
                     deckUiState = deckUiState,
                     fabHeight = fabHeight,
-                    contentPadding = innerPadding
+                    contentPadding = innerPadding,
+                    onDetailsClick = onDetailsClick,
+                    sharedTransitionScope = sharedTransitionScope,
+                    animatedVisibilityScope = animatedVisibilityScope
                 )
             }
         }
@@ -146,6 +149,7 @@ fun HiderDeckScreen(
 }
 
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun HiderDeck(
     viewModel: HideAndSeekViewModel,
@@ -153,6 +157,9 @@ fun HiderDeck(
     deckUiState: DeckUiState,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     fabHeight: Dp,
+    onDetailsClick: (Int) -> Unit,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -223,7 +230,7 @@ fun HiderDeck(
                 .fillMaxSize()
         ) {
             items(deckUiState.playerDeck) { card ->
-                CardItem(card, viewModel)
+                CardItem(card, viewModel, onDetailsClick, sharedTransitionScope, animatedVisibilityScope)
             }
 
             item {
@@ -246,71 +253,83 @@ fun HiderDeck(
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun CardItem(
     card: Card,
-    viewModel: HideAndSeekViewModel
+    viewModel: HideAndSeekViewModel,
+    onDetailsClick: (Int) -> Unit,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                ),
-                modifier = Modifier
-                    .padding(8.dp)
-//                    .clickable(
-//                        onClick = {
-//                            viewModel.updateDeleteCardDialog()
-//                            viewModel.setIdToDelete(item.id)
-//                        }
-//                    )
-            ) {
-                Image(
-                    painterResource(card.image),
-                    contentDescription = stringResource(R.string.card),
-                    Modifier
-                        .padding(5.dp)
-                        .clip(RoundedCornerShape(6))
-                        .size(height = 192.dp, width = 137.dp)
+    with(sharedTransitionScope) {
+        Card(
+            modifier = Modifier
+                .sharedElement(
+                    sharedTransitionScope.rememberSharedContentState(key = "card-${card.id}"),
+                    animatedVisibilityScope = animatedVisibilityScope
                 )
-            }
-            Spacer(modifier = Modifier.weight(1f))
-            Column(
-                modifier = Modifier.padding(32.dp)
+                .fillMaxWidth()
+                .padding(8.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                if(card.type != CardType.TimeBonus) {
-                    ButtonWithIcon(
-                        icon = Icons.Rounded.PlayArrow,
-                        text = R.string.play,
-                        color = confirmGreen,
-                        onClick = {}
+                with(sharedTransitionScope) {
+                    CardImage(
+                        card = card,
+                        onClick = {
+                            onDetailsClick(card.id)
+                        },
+                        clickable = true,
+                        imageModifier = Modifier
+                            .padding(5.dp)
+                            .size(height = 192.dp, width = 137.dp)
+                            .sharedElement(
+                                sharedTransitionScope.rememberSharedContentState(key = "image-${card.id}"),
+                                animatedVisibilityScope = animatedVisibilityScope
+                            )
+                            .clip(RoundedCornerShape(6)),
+                        cardModifier = Modifier
+                            .sharedElement(
+                                sharedTransitionScope.rememberSharedContentState(key = "border-${card.id}"),
+                                animatedVisibilityScope = animatedVisibilityScope
+                            )
                     )
                 }
-                ButtonWithIcon(
-                    icon = Icons.Rounded.Delete,
-                    text = R.string.discard,
-                    color = discardRed,
-                    size = 25,
-                    onClick = {
-                        viewModel.setIdToDelete(card.id)
-                        viewModel.updateDeleteCardDialog()
+                Spacer(modifier = Modifier.weight(1f))
+                Column(
+                    modifier = Modifier.padding(32.dp)
+                ) {
+                    if (card.type != CardType.TimeBonus) {
+                        ButtonWithIcon(
+                            icon = Icons.Rounded.PlayArrow,
+                            text = R.string.play,
+                            color = confirmGreen,
+                            onClick = {}
+                        )
                     }
-                )
-                ButtonWithIcon(
-                    icon = Icons.Rounded.Info,
-                    text = R.string.details,
-                    color = Color(207, 207, 207),
-                    size = 25,
-                    onClick = {}
-                )
+                    ButtonWithIcon(
+                        icon = Icons.Rounded.Delete,
+                        text = R.string.discard,
+                        color = discardRed,
+                        size = 25,
+                        onClick = {
+                            viewModel.setIdToDelete(card.id)
+                            viewModel.updateDeleteCardDialog()
+                        }
+                    )
+                    ButtonWithIcon(
+                        icon = Icons.Rounded.Info,
+                        text = R.string.details,
+                        color = Color(207, 207, 207),
+                        size = 25,
+                        onClick = {
+                            onDetailsClick(card.id)
+                        }
+                    )
+                }
             }
         }
     }
@@ -349,8 +368,8 @@ fun ButtonWithIcon(
     }
 }
 
-@Preview
-@Composable
-fun HiderDeckScreenPreview() {
-    HiderDeckScreen({ CardsRepository[0] }, {}, viewModel(factory = AppViewModelProvider.Factory), HideAndSeekUiState(), DeckUiState(), PreferencesUiState())
-}
+//@Preview
+//@Composable
+//fun HiderDeckScreenPreview() {
+//    HiderDeckScreen({ CardsRepository[0] }, {}, {}, viewModel(factory = AppViewModelProvider.Factory), HideAndSeekUiState(), DeckUiState(), PreferencesUiState())
+//}

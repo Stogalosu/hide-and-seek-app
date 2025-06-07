@@ -1,8 +1,6 @@
 package ro.go.stecker.hideandseek.ui.screens
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,8 +16,6 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -28,7 +24,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -43,6 +38,7 @@ import ro.go.stecker.hideandseek.R
 import ro.go.stecker.hideandseek.data.DeckUiState
 import ro.go.stecker.hideandseek.data.HideAndSeekUiState
 import ro.go.stecker.hideandseek.data.HideAndSeekViewModel
+import ro.go.stecker.hideandseek.ui.CardImage
 import ro.go.stecker.hideandseek.ui.HideAndSeekTopAppBar
 import ro.go.stecker.hideandseek.ui.infraFontFamily
 import ro.go.stecker.hideandseek.ui.navigation.HideAndSeekScreen
@@ -105,32 +101,22 @@ fun DrawCards(
     ) {
         Spacer(modifier = Modifier.weight(1f))
         LazyRow {
-            items(items = uiState.drawnTempCards) { item ->
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
-                    ),
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .clickable(
-                            onClick = {
-                                coroutineScope.launch {
-                                    viewModel.addCardToDeck(item)
-                                    navigateUp()
-                                    delay(200)
-                                    viewModel.updateSelectCardText(false)
-                                }
-                            }
-                        )
-                ) {
-                    Image(
-                        painterResource(item.image),
-                        contentDescription = stringResource(item.name),
-                        Modifier
-                            .padding(5.dp)
-                            .clip(RoundedCornerShape(2))
-                    )
-                }
+            items(items = uiState.drawnTempCards) { card ->
+                CardImage(
+                    card = card,
+                    onClick = {
+                        coroutineScope.launch {
+                            viewModel.addCardToDeck(card)
+                            navigateUp()
+                            delay(200)
+                            viewModel.updateSelectCardText(false)
+                        }
+                    },
+                    clickable = true,
+                    imageModifier = Modifier
+                        .padding(5.dp)
+                        .clip(RoundedCornerShape(2))
+                )
             }
         }
         Spacer(modifier = Modifier.weight(1f))

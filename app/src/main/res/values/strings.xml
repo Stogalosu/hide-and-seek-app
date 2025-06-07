@@ -62,15 +62,26 @@
     <string name="curse_zoologist">Curse of the zoologist</string>
 
     <string name="randomize_question">Randomize question</string>
+    <string name="randomize_question_desc">When asked a question, you can play this card to force the seekers to randomly choose another question from the same category (roll a die) instead of the one they want.</string>
     <string name="veto_question">Veto question</string>
+    <string name="veto_question_desc">When asked a question, you can play this card to veto it (the seekers cannot ask it for the rest of the game)</string>
     <string name="duplicate_card">Duplicate another card</string>
+    <string name="duplicate_card_desc">Discard this card and duplicate another one from your deck.</string>
     <string name="move">Move</string>
+    <string name="move_desc">You have 20 minutes to go to another hiding location. You cannot play this card if the seekers are within 400 m of your current location. Before you move, you must inform them of your move, send them your current location and discard all your cards. They cannot move or ask any questions while you move and the timer will be paused.</string>
     <string name="discard_1_draw_2">Discard 1 draw 2</string>
+    <string name="discard_1_draw_2_desc">Discard another card and draw two new ones.</string>
     <string name="discard_2_draw_3">Discard 2 draw 3</string>
+    <string name="discard_2_draw_3_desc">Discard another two cards and draw three new ones.</string>
 
     <string name="three_min_bonus">3 minute time bonus</string>
+    <string name="three_min_bonus_desc">Keep this card to receive an extra 3 minutes on the timer at the end of the run!</string>
     <string name="five_min_bonus">5 minute time bonus</string>
+    <string name="five_min_bonus_desc">Keep this card to receive an extra 5 minutes on the timer at the end of the run!</string>
     <string name="ten_min_bonus">10 minute time bonus</string>
+    <string name="ten_min_bonus_desc">Keep this card to receive an extra 10 minutes on the timer at the end of the run!</string>
     <string name="fifteen_min_bonus">15 minute time bonus</string>
+    <string name="fifteen_min_bonus_desc">Keep this card to receive an extra 15 minutes on the timer at the end of the run!</string>
     <string name="twenty_min_bonus">20 minute time bonus</string>
+    <string name="twenty_min_bonus_desc">Keep this card to receive an extra 20 minutes on the timer at the end of the run!</string>
 </resources>

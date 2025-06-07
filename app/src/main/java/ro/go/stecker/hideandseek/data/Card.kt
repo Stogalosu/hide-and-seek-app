@@ -17,6 +17,8 @@ data class Card(
     val name: Int = 0,
     @Ignore
     val type: CardType = CardType.TimeBonus,
+    @Ignore @StringRes
+    val descrption: Int = 0,
     @Ignore @DrawableRes
     val image: Int = 0,
     var probability: Int = 1
