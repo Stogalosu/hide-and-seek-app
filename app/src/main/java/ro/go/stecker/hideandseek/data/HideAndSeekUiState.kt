@@ -20,7 +20,8 @@ data class DeckUiState(
 )
 
 fun DeckUiState.getCardWithId(cardId: Int): Card {
-    return playerDeck[playerDeck.indexOf(CardsRepository[cardId])]
+    return playerDeck.first { it.id == cardId }
+//    return playerDeck[playerDeck.indexOf(CardsRepository[cardId])]
 }
 
 data class PreferencesUiState(

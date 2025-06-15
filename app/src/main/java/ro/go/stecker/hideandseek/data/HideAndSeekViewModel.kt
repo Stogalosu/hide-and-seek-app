@@ -1,5 +1,6 @@
 package ro.go.stecker.hideandseek.data
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,8 +12,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import retrofit2.Response
 import ro.go.stecker.hideandseek.data.database.DeckRepository
+import ro.go.stecker.hideandseek.network.CardApi
 import ro.go.stecker.hideandseek.ui.screens.DrawType
+import java.io.IOException
 import kotlin.random.Random.Default.nextInt
 
 class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRepository: PreferencesRepository): ViewModel() {
@@ -168,4 +172,12 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
     suspend fun addCardToDeck(card: Card) = deckRepository.insertDrawnCard(card.toDrawnCard())
 
     suspend fun deleteCard(cardId: Int) = deckRepository.deleteDrawnCard(cardId)
+
+    suspend fun playCard(card: Card, context: Context): Response<SentCard>? {
+        try {
+            return CardApi.retrofitService.newCard(card.toSentCard(context))
+        } catch (e: IOException) {
+            return null
+        }
+    }
 }

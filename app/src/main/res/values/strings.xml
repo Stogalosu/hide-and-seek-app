@@ -18,10 +18,14 @@
     <string name="no_cards_left">No cards left!</string>
     <string name="no_cards_dialog">You did it! You reached the end of the pack! Play the cards you have or start a new game.</string>
     <string name="got_it">Got it!</string>
+    <string name="connecting_to_server">Connecting to server...</string>
+    <string name="no_internet">No internet connection!</string>
+    <string name="no_internet_dialog">Couldn\'t play card, server not available. Check your internet connection. If you have internet but still get this error, check server page: https://stecker.ddns.net:3000</string>
     <string name="card">Card</string>
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
     <string name="play">Play</string>
+    <string name="share_played_card">I just played a %1$s card! Go validate it at https://stecker.ddns.net:3000/cards/%2$s</string>
     <string name="discard">Discard</string>
     <string name="details">Details</string>
     <string name="no_cards">You have no cards!</string>

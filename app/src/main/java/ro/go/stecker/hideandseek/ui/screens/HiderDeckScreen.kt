@@ -1,5 +1,7 @@
 package ro.go.stecker.hideandseek.ui.screens
 
+import android.content.Intent
+import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.activity.compose.BackHandler
 import androidx.annotation.IntRange
@@ -30,6 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
@@ -71,7 +74,7 @@ val confirmGreen = Color(87, 201, 90)
 fun HiderDeckScreen(
     onDrawCards: () -> Unit,
     onNavigateToStartScreen: () -> Unit,
-    onDetailsClick: (Int) -> Unit,
+    onDetailsClick: (String) -> Unit,
     viewModel: HideAndSeekViewModel,
     uiState: HideAndSeekUiState,
     deckUiState: DeckUiState,
@@ -148,6 +151,8 @@ fun HiderDeckScreen(
     }
 }
 
+var noInternetDialog by mutableStateOf(false)
+var connectingToServerDialog by mutableStateOf(false)
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -157,7 +162,7 @@ fun HiderDeck(
     deckUiState: DeckUiState,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     fabHeight: Dp,
-    onDetailsClick: (Int) -> Unit,
+    onDetailsClick: (String) -> Unit,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier
@@ -197,8 +202,7 @@ fun HiderDeck(
             icon = { Icon(Icons.Rounded.Warning, contentDescription = stringResource(R.string.no_cards_left)) },
             title = { Text(stringResource(R.string.no_cards_left)) },
             text = { Text(stringResource(R.string.no_cards_dialog)) },
-            confirmButton = {},
-            dismissButton = {
+            confirmButton = {
                 TextButton(onClick = { viewModel.updateNoCardsDialog() }) {
                     Text(stringResource(R.string.got_it))
                 }
@@ -212,9 +216,36 @@ fun HiderDeck(
             icon = { Icon(Icons.Rounded.Warning, contentDescription = stringResource(R.string.no_cards_left)) },
             title = { Text(stringResource(R.string.too_many_cards), textAlign = TextAlign.Center) },
             text = { Text(stringResource(R.string.too_many_cards_dialog)) },
-            confirmButton = {},
-            dismissButton = {
+            confirmButton = {
                 TextButton(onClick = { viewModel.updateTooManyCardsDialog() }) {
+                    Text(stringResource(R.string.got_it))
+                }
+            }
+        )
+    }
+
+    if(connectingToServerDialog) {
+        AlertDialog(
+            onDismissRequest = { connectingToServerDialog = !connectingToServerDialog },
+            icon = { Icon(Icons.Rounded.Info, contentDescription = stringResource(R.string.connecting_to_server)) },
+            title = { Text(stringResource(R.string.connecting_to_server)) },
+            text = {
+                Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+                    CircularProgressIndicator()
+                }
+                   },
+            confirmButton = {}
+        )
+    }
+
+    if(noInternetDialog) {
+        AlertDialog(
+            onDismissRequest = { noInternetDialog = !noInternetDialog },
+            icon = { Icon(Icons.Rounded.Warning, tint = Color.Red, contentDescription = stringResource(R.string.no_internet)) },
+            title = { Text(stringResource(R.string.no_internet)) },
+            text = { Text(stringResource(R.string.no_internet_dialog)) },
+            confirmButton = {
+                TextButton(onClick = { noInternetDialog = !noInternetDialog }) {
                     Text(stringResource(R.string.got_it))
                 }
             }
@@ -229,8 +260,14 @@ fun HiderDeck(
                 .padding(contentPadding)
                 .fillMaxSize()
         ) {
-            items(deckUiState.playerDeck) { card ->
-                CardItem(card, viewModel, onDetailsClick, sharedTransitionScope, animatedVisibilityScope)
+            items(items = deckUiState.playerDeck, key = { it.uuid }) { card ->
+                CardItem(
+                    card = card,
+                    viewModel = viewModel,
+                    onDetailsClick = onDetailsClick,
+                    sharedTransitionScope = sharedTransitionScope,
+                    animatedVisibilityScope = animatedVisibilityScope
+                )
             }
 
             item {
@@ -258,15 +295,18 @@ fun HiderDeck(
 fun CardItem(
     card: Card,
     viewModel: HideAndSeekViewModel,
-    onDetailsClick: (Int) -> Unit,
+    onDetailsClick: (String) -> Unit,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+
     with(sharedTransitionScope) {
         Card(
             modifier = Modifier
                 .sharedElement(
-                    sharedTransitionScope.rememberSharedContentState(key = "card-${card.id}"),
+                    sharedTransitionScope.rememberSharedContentState(key = "card-${card.uuid}"),
                     animatedVisibilityScope = animatedVisibilityScope
                 )
                 .fillMaxWidth()
@@ -280,20 +320,21 @@ fun CardItem(
                     CardImage(
                         card = card,
                         onClick = {
-                            onDetailsClick(card.id)
+                            Log.d("test", card.uuid)
+                            onDetailsClick(card.uuid)
                         },
                         clickable = true,
                         imageModifier = Modifier
                             .padding(5.dp)
                             .size(height = 192.dp, width = 137.dp)
                             .sharedElement(
-                                sharedTransitionScope.rememberSharedContentState(key = "image-${card.id}"),
+                                sharedTransitionScope.rememberSharedContentState(key = "image-${card.uuid}"),
                                 animatedVisibilityScope = animatedVisibilityScope
                             )
                             .clip(RoundedCornerShape(6)),
                         cardModifier = Modifier
                             .sharedElement(
-                                sharedTransitionScope.rememberSharedContentState(key = "border-${card.id}"),
+                                sharedTransitionScope.rememberSharedContentState(key = "border-${card.uuid}"),
                                 animatedVisibilityScope = animatedVisibilityScope
                             )
                     )
@@ -307,7 +348,24 @@ fun CardItem(
                             icon = Icons.Rounded.PlayArrow,
                             text = R.string.play,
                             color = confirmGreen,
-                            onClick = {}
+                            onClick = {
+                                coroutineScope.launch {
+                                    connectingToServerDialog = true
+                                    val response = viewModel.playCard(card, context)
+                                    connectingToServerDialog = false
+                                    if(response != null) {
+                                        val sendIntent = Intent(Intent.ACTION_SEND).apply {
+                                            putExtra(Intent.EXTRA_TEXT, context.getString(R.string.share_played_card, context.getString(card.name), response.body()!!.token))
+                                            type = "text/plain"
+                                        }
+                                        val shareIntent = Intent.createChooser(sendIntent, null)
+                                        context.startActivity(shareIntent)
+                                        viewModel.deleteCard(card.id)
+                                    } else {
+                                        noInternetDialog = true
+                                    }
+                                }
+                            }
                         )
                     }
                     ButtonWithIcon(
@@ -326,7 +384,7 @@ fun CardItem(
                         color = Color(207, 207, 207),
                         size = 25,
                         onClick = {
-                            onDetailsClick(card.id)
+                            onDetailsClick(card.uuid)
                         }
                     )
                 }

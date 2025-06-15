@@ -62,6 +62,10 @@ dependencies {
 //  DataStore
     implementation(libs.androidx.datastore.preferences)
 
+    // Retrofit
+    implementation(libs.retrofit)
+    //Gson Converter: Converts JSON responses into Kotlin objects.
+    implementation(libs.converter.gson)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

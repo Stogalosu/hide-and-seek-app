@@ -19,7 +19,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import ro.go.stecker.hideandseek.AppViewModelProvider
 import ro.go.stecker.hideandseek.R
-import ro.go.stecker.hideandseek.data.CardsRepository
 import ro.go.stecker.hideandseek.data.HideAndSeekViewModel
 import ro.go.stecker.hideandseek.ui.screens.DetailsScreen
 import ro.go.stecker.hideandseek.ui.screens.DrawCardsScreen
@@ -111,13 +110,13 @@ fun HideAndSeekNavHost(
             }
 
             composable(
-                route = HideAndSeekScreen.DetailsScreen.name + "/{cardId}",
-                arguments = listOf(navArgument("cardId") { type = NavType.IntType })
+                route = HideAndSeekScreen.DetailsScreen.name + "/{cardUuid}",
+                arguments = listOf(navArgument("cardUuid") { type = NavType.StringType })
             ) { backStackEntry ->
-                val cardId = backStackEntry.arguments?.getInt("cardId") ?: 0
+                val cardUuid = backStackEntry.arguments?.getString("cardUuid") ?: ""
 
                 DetailsScreen(
-                    card = CardsRepository[cardId],
+                    card = deckUiState.playerDeck.first { it.uuid == cardUuid },
                     onBackClick = { navController.popBackStack() },
                     sharedTransitionScope = this@SharedTransitionLayout,
                     animatedVisibilityScope = this@composable

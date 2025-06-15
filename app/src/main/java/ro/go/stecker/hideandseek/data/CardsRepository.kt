@@ -185,7 +185,7 @@ val CardsRepository: List<Card> = listOf(
         id = 25,
         name = R.string.randomize_question,
         type = CardType.PowerUp,
-        descrption = R.string.randomize_question_desc,
+        description = R.string.randomize_question_desc,
         image = R.drawable.randomize_question,
         probability = 4
     ),
@@ -193,7 +193,7 @@ val CardsRepository: List<Card> = listOf(
         id = 26,
         name = R.string.veto_question,
         type = CardType.PowerUp,
-        descrption = R.string.veto_question_desc,
+        description = R.string.veto_question_desc,
         image = R.drawable.veto_question,
         probability = 4
     ),
@@ -201,7 +201,7 @@ val CardsRepository: List<Card> = listOf(
         id = 27,
         name = R.string.duplicate_card,
         type = CardType.PowerUp,
-        descrption = R.string.duplicate_card_desc,
+        description = R.string.duplicate_card_desc,
         image = R.drawable.duplicate_another_card,
         probability = 2
     ),
@@ -209,7 +209,7 @@ val CardsRepository: List<Card> = listOf(
         id = 28,
         name = R.string.move,
         type = CardType.PowerUp,
-        descrption = R.string.move_desc,
+        description = R.string.move_desc,
         image = R.drawable.move,
         probability = 1
     ),
@@ -217,7 +217,7 @@ val CardsRepository: List<Card> = listOf(
         id = 29,
         name = R.string.discard_1_draw_2,
         type = CardType.PowerUp,
-        descrption = R.string.discard_1_draw_2_desc,
+        description = R.string.discard_1_draw_2_desc,
         image = R.drawable.discard_1_draw_2,
         probability = 4
     ),
@@ -225,7 +225,7 @@ val CardsRepository: List<Card> = listOf(
         id = 30,
         name = R.string.discard_2_draw_3,
         type = CardType.PowerUp,
-        descrption = R.string.discard_2_draw_3_desc,
+        description = R.string.discard_2_draw_3_desc,
         image = R.drawable.discard_2_draw_3,
         probability = 4
     ),
@@ -234,7 +234,7 @@ val CardsRepository: List<Card> = listOf(
     Card(
         id = 31,
         name = R.string.three_min_bonus,
-        descrption = R.string.three_min_bonus_desc,
+        description = R.string.three_min_bonus_desc,
         type = CardType.TimeBonus,
         image = R.drawable.three_minute_bonus,
         probability = 25
@@ -243,7 +243,7 @@ val CardsRepository: List<Card> = listOf(
         id = 32,
         name = R.string.five_min_bonus,
         type = CardType.TimeBonus,
-        descrption = R.string.five_min_bonus_desc,
+        description = R.string.five_min_bonus_desc,
         image = R.drawable.five_minute_bonus,
         probability = 15
     ),
@@ -251,7 +251,7 @@ val CardsRepository: List<Card> = listOf(
         id = 33,
         name = R.string.ten_min_bonus,
         type = CardType.TimeBonus,
-        descrption = R.string.ten_min_bonus_desc,
+        description = R.string.ten_min_bonus_desc,
         image = R.drawable.ten_minute_bonus,
         probability = 10
     ),
@@ -259,7 +259,7 @@ val CardsRepository: List<Card> = listOf(
         id = 34,
         name = R.string.fifteen_min_bonus,
         type = CardType.TimeBonus,
-        descrption = R.string.fifteen_min_bonus_desc,
+        description = R.string.fifteen_min_bonus_desc,
         image = R.drawable.fifteen_minute_bonus,
         probability = 3
     ),
@@ -267,7 +267,7 @@ val CardsRepository: List<Card> = listOf(
         id = 35,
         name = R.string.twenty_min_bonus,
         type = CardType.TimeBonus,
-        descrption = R.string.twenty_min_bonus_desc,
+        description = R.string.twenty_min_bonus_desc,
         image = R.drawable.twenty_minute_bonus,
         probability = 2
     ),

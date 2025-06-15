@@ -45,7 +45,7 @@ fun DetailsScreen(
             shape = RoundedCornerShape(24.dp),
             modifier = Modifier
                 .sharedElement(
-                    sharedTransitionScope.rememberSharedContentState(key = "card-${card.id}"),
+                    sharedTransitionScope.rememberSharedContentState(key = "card-${card.uuid}"),
                     animatedVisibilityScope = animatedVisibilityScope
                 )
                 .fillMaxSize()
@@ -90,20 +90,20 @@ fun DetailsScreen(
                                     imageModifier = Modifier
                                         .padding(5.dp)
                                         .sharedElement(
-                                            sharedTransitionScope.rememberSharedContentState(key = "image-${card.id}"),
+                                            sharedTransitionScope.rememberSharedContentState(key = "image-${card.uuid}"),
                                             animatedVisibilityScope = animatedVisibilityScope
                                         )
                                         .clip(RoundedCornerShape(2)),
                                     cardModifier = Modifier
                                         .sharedElement(
-                                            sharedTransitionScope.rememberSharedContentState(key = "border-${card.id}"),
+                                            sharedTransitionScope.rememberSharedContentState(key = "border-${card.uuid}"),
                                             animatedVisibilityScope = animatedVisibilityScope
                                         )
                                 )
                             }
-                            if(card.descrption != 0) {
+                            if(card.description != 0) {
                                 Text(
-                                    text = stringResource(card.descrption),
+                                    text = stringResource(card.description),
                                     textAlign = TextAlign.Center,
                                     modifier = Modifier
                                         .padding(8.dp)
@@ -120,21 +120,21 @@ fun DetailsScreen(
                                     imageModifier = Modifier
                                         .padding(5.dp)
                                         .sharedElement(
-                                            sharedTransitionScope.rememberSharedContentState(key = "image-${card.id}"),
+                                            sharedTransitionScope.rememberSharedContentState(key = "image-${card.uuid}"),
                                             animatedVisibilityScope = animatedVisibilityScope
                                         )
                                         .clip(RoundedCornerShape(2)),
                                     cardModifier = Modifier
                                         .align(Alignment.CenterHorizontally)
                                         .sharedElement(
-                                            sharedTransitionScope.rememberSharedContentState(key = "border-${card.id}"),
+                                            sharedTransitionScope.rememberSharedContentState(key = "border-${card.uuid}"),
                                             animatedVisibilityScope = animatedVisibilityScope
                                         )
                                 )
                             }
-                            if(card.descrption != 0) {
+                            if(card.description != 0) {
                                 Text(
-                                    text = stringResource(card.descrption),
+                                    text = stringResource(card.description),
                                     textAlign = TextAlign.Center,
                                     modifier = Modifier.padding(8.dp)
                                 )
