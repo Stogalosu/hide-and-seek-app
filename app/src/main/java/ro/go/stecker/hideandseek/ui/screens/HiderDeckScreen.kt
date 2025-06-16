@@ -52,7 +52,6 @@ import ro.go.stecker.hideandseek.data.HideAndSeekViewModel
 import ro.go.stecker.hideandseek.data.DeckUiState
 import ro.go.stecker.hideandseek.data.GameState
 import ro.go.stecker.hideandseek.data.PreferencesUiState
-import ro.go.stecker.hideandseek.data.getCardWithId
 import ro.go.stecker.hideandseek.getActivity
 import ro.go.stecker.hideandseek.ui.navigation.HideAndSeekScreen
 import androidx.compose.runtime.getValue
@@ -62,6 +61,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import ro.go.stecker.hideandseek.data.CardType
+import ro.go.stecker.hideandseek.data.getCardWithUuid
+import ro.go.stecker.hideandseek.data.getName
+import ro.go.stecker.hideandseek.data.getType
 import ro.go.stecker.hideandseek.ui.CardImage
 import ro.go.stecker.hideandseek.ui.HideAndSeekTopAppBar
 import ro.go.stecker.hideandseek.ui.infraFontFamily
@@ -174,14 +176,14 @@ fun HiderDeck(
             onDismissRequest = { viewModel.updateDeleteCardDialog() },
             icon = { Icon(Icons.Rounded.Delete, contentDescription = stringResource(R.string.delete_card)) },
             title = { Text(stringResource(R.string.delete_card)) },
-            text = { Text(stringResource(R.string.delete_card_question, stringResource(deckUiState.getCardWithId(uiState.idToDelete).name))) },
+            text = { Text(stringResource(R.string.delete_card_question, stringResource(deckUiState.getCardWithUuid(uiState.uuidToDelete).getName()))) },
             confirmButton = {
                 TextButton(
                     onClick = {
                         viewModel.updateDeleteCardDialog()
-                        if(deckUiState.getCardWithId(uiState.idToDelete).name == R.string.curse_overflowing_chalice) viewModel.updateOverflowingChalice()
+                        if(deckUiState.getCardWithUuid(uiState.uuidToDelete).getName() == R.string.curse_overflowing_chalice) viewModel.updateOverflowingChalice()
                         coroutineScope.launch {
-                            viewModel.deleteCard(uiState.idToDelete)
+                            viewModel.deleteCard(uiState.uuidToDelete)
                         }
                     }
                 ) {
@@ -343,7 +345,7 @@ fun CardItem(
                 Column(
                     modifier = Modifier.padding(32.dp)
                 ) {
-                    if (card.type != CardType.TimeBonus) {
+                    if (card.getType() != CardType.TimeBonus) {
                         ButtonWithIcon(
                             icon = Icons.Rounded.PlayArrow,
                             text = R.string.play,
@@ -355,12 +357,12 @@ fun CardItem(
                                     connectingToServerDialog = false
                                     if(response != null) {
                                         val sendIntent = Intent(Intent.ACTION_SEND).apply {
-                                            putExtra(Intent.EXTRA_TEXT, context.getString(R.string.share_played_card, context.getString(card.name), response.body()!!.token))
+                                            putExtra(Intent.EXTRA_TEXT, context.getString(R.string.share_played_card, context.getString(card.getName()), response.body()!!.token))
                                             type = "text/plain"
                                         }
                                         val shareIntent = Intent.createChooser(sendIntent, null)
                                         context.startActivity(shareIntent)
-                                        viewModel.deleteCard(card.id)
+                                        viewModel.deleteCard(card.uuid)
                                     } else {
                                         noInternetDialog = true
                                     }
@@ -374,7 +376,7 @@ fun CardItem(
                         color = discardRed,
                         size = 25,
                         onClick = {
-                            viewModel.setIdToDelete(card.id)
+                            viewModel.setUuidToDelete(card.uuid)
                             viewModel.updateDeleteCardDialog()
                         }
                     )

@@ -13,16 +13,22 @@ enum class CardType() {
     TimeBonus
 }
 
-@Entity(tableName = "card_list")
-data class Card @OptIn(ExperimentalUuidApi::class) constructor(
+@OptIn(ExperimentalUuidApi::class)
+@Entity(tableName = "player_deck")
+data class Card(
+    @PrimaryKey(autoGenerate = false)
+    var uuid: String = Uuid.random().toString(),
+    var id: Int = 0
+)
+
+@Entity(tableName = "card_deck")
+data class CardDetails(
     @PrimaryKey(autoGenerate = false)
     var id: Int = 0,
     @Ignore
-    var uuid: String = Uuid.random().toString(),
+    val type: CardType = CardType.TimeBonus,
     @Ignore @StringRes
     val name: Int = 0,
-    @Ignore
-    val type: CardType = CardType.TimeBonus,
     @Ignore @StringRes
     val description: Int = 0,
     @Ignore @DrawableRes
@@ -30,26 +36,24 @@ data class Card @OptIn(ExperimentalUuidApi::class) constructor(
     var probability: Int = 1
 )
 
-@OptIn(ExperimentalUuidApi::class)
-fun Card.toDrawnCard(): DrawnCard {
-    return DrawnCard(uuid = Uuid.random().toString(), cardId = this.id)
+fun Card.getName(): Int {
+    return CardsRepository[this.id].name
+}
+
+fun Card.getDescription(): Int {
+    return CardsRepository[this.id].description
+}
+
+fun Card.getImage(): Int {
+    return CardsRepository[this.id].image
+}
+
+fun Card.getType(): CardType {
+    return CardsRepository[this.id].type
 }
 
 fun Card.toSentCard(context: Context): SentCard {
-    return SentCard(name = context.getString(this.name))
-}
-
-@Entity(tableName = "deck")
-data class DrawnCard(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
-    val uuid: String,
-    val cardId: Int
-)
-
-@OptIn(ExperimentalUuidApi::class)
-fun DrawnCard.toCard(): Card {
-    return CardsRepository[this.cardId].copy(uuid = this.uuid)
+    return SentCard(name = context.getString(this.getName()))
 }
 
 data class SentCard(

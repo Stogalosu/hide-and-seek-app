@@ -30,6 +30,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ro.go.stecker.hideandseek.R
 import ro.go.stecker.hideandseek.data.Card
+import ro.go.stecker.hideandseek.data.getDescription
+import ro.go.stecker.hideandseek.data.getName
 import ro.go.stecker.hideandseek.ui.CardImage
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -69,7 +71,7 @@ fun DetailsScreen(
                         Icon(imageVector = Icons.Rounded.ArrowBack, contentDescription = stringResource(R.string.back_button))
                     }
                     Text(
-                        text = stringResource(card.name),
+                        text = stringResource(card.getName()),
                         fontSize = 28.sp,
                         textAlign = TextAlign.Center
                     )
@@ -101,9 +103,9 @@ fun DetailsScreen(
                                         )
                                 )
                             }
-                            if(card.description != 0) {
+                            if(card.getDescription() != 0) {
                                 Text(
-                                    text = stringResource(card.description),
+                                    text = stringResource(card.getDescription()),
                                     textAlign = TextAlign.Center,
                                     modifier = Modifier
                                         .padding(8.dp)
@@ -132,9 +134,9 @@ fun DetailsScreen(
                                         )
                                 )
                             }
-                            if(card.description != 0) {
+                            if(card.getDescription() != 0) {
                                 Text(
-                                    text = stringResource(card.description),
+                                    text = stringResource(card.getDescription()),
                                     textAlign = TextAlign.Center,
                                     modifier = Modifier.padding(8.dp)
                                 )

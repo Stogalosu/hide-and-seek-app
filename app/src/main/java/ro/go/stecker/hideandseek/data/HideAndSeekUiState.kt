@@ -7,7 +7,7 @@ data class HideAndSeekUiState(
     val deleteCardDialog: Boolean = false,
     val noCardsDialog: Boolean = false,
     val tooManyCardsDialog: Boolean = false,
-    val idToDelete: Int = 0,
+    val uuidToDelete: String = "",
     val cardDeck: MutableList<Card> = mutableListOf<Card>(),
     val drawnTempCards: List<Card> = listOf<Card>(),
     val selectCard: Boolean = false,
@@ -16,12 +16,11 @@ data class HideAndSeekUiState(
 
 data class DeckUiState(
     val playerDeck: List<Card> = listOf(),
-    val cardDeck: List<Card> = listOf()
+    val cardDeck: List<CardDetails> = listOf()
 )
 
-fun DeckUiState.getCardWithId(cardId: Int): Card {
-    return playerDeck.first { it.id == cardId }
-//    return playerDeck[playerDeck.indexOf(CardsRepository[cardId])]
+fun DeckUiState.getCardWithUuid(uuid: String): Card {
+    return playerDeck.first { it.uuid == uuid }
 }
 
 data class PreferencesUiState(

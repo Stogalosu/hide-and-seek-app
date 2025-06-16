@@ -13,6 +13,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import ro.go.stecker.hideandseek.R
 import ro.go.stecker.hideandseek.data.Card
+import ro.go.stecker.hideandseek.data.getImage
 
 @Composable
 fun CardImage(
@@ -34,7 +35,7 @@ fun CardImage(
             )
     ) {
         Image(
-            painter = painterResource(card.image),
+            painter = painterResource(card.getImage()),
             contentDescription = stringResource(R.string.card),
             modifier = imageModifier
         )

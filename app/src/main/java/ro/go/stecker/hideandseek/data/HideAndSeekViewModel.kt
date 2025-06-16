@@ -60,7 +60,7 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
             deckRepository.clearDeck()
             preferencesRepository.startGame()
         }
-        deckRepository.setCardList(CardsRepository)
+        deckRepository.setCardDeck(CardsRepository)
     }
 
     fun endGame() {
@@ -99,10 +99,10 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
         }
     }
 
-    fun setIdToDelete(cardId: Int) {
+    fun setUuidToDelete(uuid: String) {
         _uiState.update { currentState ->
             currentState.copy(
-                idToDelete = cardId
+                uuidToDelete = uuid
             )
         }
     }
@@ -121,7 +121,7 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
 
     suspend fun pickRandomCard(): Card {
         var totalWeight = deckUiState.value.cardDeck.sumOf { it.probability }
-        var random: Int = 0
+        var random = 0
         try {
             random = nextInt(1, totalWeight)
         } catch (e: IllegalArgumentException) {
@@ -130,9 +130,9 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
         var cumulative = 0
         for(card in deckUiState.value.cardDeck) {
             cumulative += card.probability
-            if(random <= cumulative) {
+            if(random <= cumulative && card.probability > 0) {
                 deckRepository.updateCardProbability(card)
-                return CardsRepository[card.id]
+                return Card(id = card.id)
             }
         }
 
@@ -169,9 +169,9 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
         }
     }
 
-    suspend fun addCardToDeck(card: Card) = deckRepository.insertDrawnCard(card.toDrawnCard())
+    suspend fun addCardToDeck(card: Card) = deckRepository.insertCard(card)
 
-    suspend fun deleteCard(cardId: Int) = deckRepository.deleteDrawnCard(cardId)
+    suspend fun deleteCard(uuid: String) = deckRepository.deleteCard(uuid)
 
     suspend fun playCard(card: Card, context: Context): Response<SentCard>? {
         try {
