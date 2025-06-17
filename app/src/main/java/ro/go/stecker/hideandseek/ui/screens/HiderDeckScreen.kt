@@ -263,13 +263,15 @@ fun HiderDeck(
                 .fillMaxSize()
         ) {
             items(items = deckUiState.playerDeck, key = { it.uuid }) { card ->
-                CardItem(
-                    card = card,
-                    viewModel = viewModel,
-                    onDetailsClick = onDetailsClick,
-                    sharedTransitionScope = sharedTransitionScope,
-                    animatedVisibilityScope = animatedVisibilityScope
-                )
+                Box(modifier = Modifier.animateItem()) {
+                    CardItem(
+                        card = card,
+                        viewModel = viewModel,
+                        onDetailsClick = onDetailsClick,
+                        sharedTransitionScope = sharedTransitionScope,
+                        animatedVisibilityScope = animatedVisibilityScope
+                    )
+                }
             }
 
             item {
