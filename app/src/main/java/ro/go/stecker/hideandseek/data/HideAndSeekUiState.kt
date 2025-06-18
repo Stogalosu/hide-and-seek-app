@@ -1,16 +1,13 @@
 package ro.go.stecker.hideandseek.data
 
-import ro.go.stecker.hideandseek.ui.screens.DrawType
 
 data class HideAndSeekUiState(
-    val selectedDrawType: DrawType = DrawType.Pick1,
     val deleteCardDialog: Boolean = false,
     val noCardsDialog: Boolean = false,
     val tooManyCardsDialog: Boolean = false,
     val uuidToDelete: String = "",
     val cardDeck: MutableList<Card> = mutableListOf<Card>(),
     val drawnTempCards: List<Card> = listOf<Card>(),
-    val selectCard: Boolean = false,
     val overflowingChalice: Int = 0
 )
 

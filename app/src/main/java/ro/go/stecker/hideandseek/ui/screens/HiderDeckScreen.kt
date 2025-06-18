@@ -60,6 +60,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import kotlinx.coroutines.delay
 import ro.go.stecker.hideandseek.data.CardType
 import ro.go.stecker.hideandseek.data.getCardWithUuid
 import ro.go.stecker.hideandseek.data.getName
@@ -85,7 +86,10 @@ fun HiderDeckScreen(
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier
 ) {
-    viewModel.clearTempCards()
+    LaunchedEffect(Unit) {
+        delay(500)
+        viewModel.clearTempCards()
+    }
 //    val configuration = LocalConfiguration.current
 //    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
     val context = LocalContext.current

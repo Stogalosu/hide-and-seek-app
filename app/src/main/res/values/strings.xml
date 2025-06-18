@@ -14,6 +14,8 @@
     <string name="draw_3_pick_1">Draw 3 pick 1</string>
     <string name="draw_2_pick_1">Draw 2 pick 1</string>
     <string name="draw_1">Draw 1</string>
+    <string name="next_card">Next card</string>
+    <string name="previous_card">Previous card</string>
     <string name="delete_card">Delete card</string>
     <string name="no_cards_left">No cards left!</string>
     <string name="no_cards_dialog">You did it! You reached the end of the pack! Play the cards you have or start a new game.</string>
@@ -29,7 +31,7 @@
     <string name="discard">Discard</string>
     <string name="details">Details</string>
     <string name="no_cards">You have no cards!</string>
-    <string name="select_card">Pick a card!</string>
+    <string name="pick_card">Pick this card</string>
     <string name="delete_card_question">Are you sure you want to delete \"%1$s\"?</string>
     <string name="too_many_cards">You have too many cards!</string>
     <string name="too_many_cards_dialog">Play or discard at least one card to draw more.</string>
@@ -38,6 +40,9 @@
     <string name="nr_games">%1$s games</string>
     <string name="nr_games_one">1 game</string>
     <string name="game_label">Game %1$s</string>
+    <string name="go_back_sure">Are you sure you want to go back?</string>
+    <string name="lose_cards_dialog">If you go back now, you will lose the cards you drew!</string>
+    <string name="go_back">Go back!</string>
     
     <string name="curse_bad_influencer">Curse of the bad influencer</string>
     <string name="curse_bird_guide">Curse of the bird guide</string>
@@ -88,4 +93,6 @@
     <string name="fifteen_min_bonus_desc">Keep this card to receive an extra 15 minutes on the timer at the end of the run!</string>
     <string name="twenty_min_bonus">20 minute time bonus</string>
     <string name="twenty_min_bonus_desc">Keep this card to receive an extra 20 minutes on the timer at the end of the run!</string>
+
+    <string name="empty"> </string>
 </resources>

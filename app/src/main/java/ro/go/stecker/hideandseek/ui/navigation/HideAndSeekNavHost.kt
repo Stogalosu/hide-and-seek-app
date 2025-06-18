@@ -93,7 +93,6 @@ fun HideAndSeekNavHost(
             ) {
                 HiderDeckScreen(
                     onDrawCards = {
-                        hideAndSeekViewModel.updateSelectCardText(false)
                         if (deckUiState.playerDeck.size >= 6) hideAndSeekViewModel.updateTooManyCardsDialog()
                         else if (deckUiState.cardDeck.sumOf { it.probability } <= 3) hideAndSeekViewModel.updateNoCardsDialog()
                         else navController.navigate(HideAndSeekScreen.DrawCards.name)
@@ -127,7 +126,6 @@ fun HideAndSeekNavHost(
                 DrawCardsScreen(
                     viewModel = hideAndSeekViewModel,
                     uiState = uiState,
-                    deckUiState = deckUiState,
                     navigateUp = {
                         navController.popBackStack(
                             route = HideAndSeekScreen.HiderDeck.name,

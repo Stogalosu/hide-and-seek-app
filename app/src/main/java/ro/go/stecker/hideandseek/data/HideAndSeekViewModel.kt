@@ -3,6 +3,7 @@ package ro.go.stecker.hideandseek.data
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -73,14 +74,6 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
         UI methods
      */
 
-    fun updateDrawType(drawType: DrawType) {
-        _uiState.update { currentState ->
-            currentState.copy(
-                selectedDrawType = drawType
-            )
-        }
-    }
-
     fun updateDeleteCardDialog() {
         _uiState.update { currentState ->
             currentState.copy(deleteCardDialog = !currentState.deleteCardDialog)
@@ -107,19 +100,12 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
         }
     }
 
-    fun updateSelectCardText(state: Boolean) {
-        _uiState.update { currentState ->
-            currentState.copy(
-                selectCard = state
-            )
-        }
-    }
-
     /*
         Card deck and player deck methods
      */
 
     suspend fun pickRandomCard(): Card {
+        delay(50)
         var totalWeight = deckUiState.value.cardDeck.sumOf { it.probability }
         var random = 0
         try {
@@ -139,9 +125,9 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
         throw IllegalStateException("No cards left!")
     }
 
-    suspend fun drawTempCards() {
+    suspend fun drawTempCards(drawType: DrawType) {
         var newCards = _uiState.value.drawnTempCards
-        repeat(_uiState.value.selectedDrawType.draw) {
+        repeat(drawType.draw) {
             newCards = newCards + pickRandomCard()
         }
 

@@ -3,6 +3,7 @@ package ro.go.stecker.hideandseek.data
 import android.content.Context
 import androidx.annotation.*
 import androidx.room.*
+import ro.go.stecker.hideandseek.R
 import com.google.gson.annotations.SerializedName
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -30,7 +31,7 @@ data class CardDetails(
     @Ignore @StringRes
     val name: Int = 0,
     @Ignore @StringRes
-    val description: Int = 0,
+    val description: Int = R.string.empty,
     @Ignore @DrawableRes
     val image: Int = 0,
     var probability: Int = 1
