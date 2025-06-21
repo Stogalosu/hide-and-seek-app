@@ -34,6 +34,8 @@ data class CardDetails(
     val description: Int = R.string.empty,
     @Ignore @DrawableRes
     val image: Int = 0,
+    @Ignore
+    val isPlayable: Boolean = false,
     var probability: Int = 1
 )
 
@@ -51,6 +53,10 @@ fun Card.getImage(): Int {
 
 fun Card.getType(): CardType {
     return CardsRepository[this.id].type
+}
+
+fun Card.isPlayable(): Boolean {
+    return CardsRepository[this.id].isPlayable
 }
 
 fun Card.toSentCard(context: Context): SentCard {

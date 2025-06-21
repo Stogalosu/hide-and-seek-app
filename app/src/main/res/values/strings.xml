@@ -16,7 +16,7 @@
     <string name="draw_1">Draw 1</string>
     <string name="next_card">Next card</string>
     <string name="previous_card">Previous card</string>
-    <string name="delete_card">Delete card</string>
+    <string name="discard_card">Discard card</string>
     <string name="no_cards_left">No cards left!</string>
     <string name="no_cards_dialog">You did it! You reached the end of the pack! Play the cards you have or start a new game.</string>
     <string name="got_it">Got it!</string>
@@ -32,7 +32,8 @@
     <string name="details">Details</string>
     <string name="no_cards">You have no cards!</string>
     <string name="pick_card">Pick this card</string>
-    <string name="delete_card_question">Are you sure you want to delete \"%1$s\"?</string>
+    <string name="discard_card_dialog">Are you sure you want to discard \"%1$s\"?</string>
+    <string name="discard_2_draw_3_card_dialog">Are you sure you want to discard the selected cards?</string>
     <string name="too_many_cards">You have too many cards!</string>
     <string name="too_many_cards_dialog">Play or discard at least one card to draw more.</string>
     <string name="overflowing_chalice_active">Curse of the overflowing chalice is active!</string>
@@ -43,6 +44,12 @@
     <string name="go_back_sure">Are you sure you want to go back?</string>
     <string name="lose_cards_dialog">If you go back now, you will lose the cards you drew!</string>
     <string name="go_back">Go back!</string>
+    <string name="select_n_cards">Select %1$s card(s)</string>
+    <string name="select">Select</string>
+    <string name="duplicate_card">Duplicate card</string>
+    <string name="duplicate_card_dialog">Are you sure you want to duplicate the \"%1$s\" card?</string>
+    <string name="yes">Yes!</string>
+    <string name="done">Done</string>
     
     <string name="curse_bad_influencer">Curse of the bad influencer</string>
     <string name="curse_bird_guide">Curse of the bird guide</string>
@@ -74,7 +81,7 @@
     <string name="randomize_question_desc">When asked a question, you can play this card to force the seekers to randomly choose another question from the same category (roll a die) instead of the one they want.</string>
     <string name="veto_question">Veto question</string>
     <string name="veto_question_desc">When asked a question, you can play this card to veto it (the seekers cannot ask it for the rest of the game)</string>
-    <string name="duplicate_card">Duplicate another card</string>
+    <string name="duplicate_another_card">Duplicate another card</string>
     <string name="duplicate_card_desc">Discard this card and duplicate another one from your deck.</string>
     <string name="move">Move</string>
     <string name="move_desc">You have 20 minutes to go to another hiding location. You cannot play this card if the seekers are within 400 m of your current location. Before you move, you must inform them of your move, send them your current location and discard all your cards. They cannot move or ask any questions while you move and the timer will be paused.</string>

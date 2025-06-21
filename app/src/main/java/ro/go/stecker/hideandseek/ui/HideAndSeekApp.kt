@@ -1,9 +1,9 @@
 package ro.go.stecker.hideandseek.ui
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.Icons.Filled
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -28,9 +28,6 @@ import ro.go.stecker.hideandseek.ui.navigation.HideAndSeekNavHost
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.viewmodel.compose.viewModel
-import ro.go.stecker.hideandseek.AppViewModelProvider
 import ro.go.stecker.hideandseek.R
 import ro.go.stecker.hideandseek.data.HideAndSeekViewModel
 import ro.go.stecker.hideandseek.ui.navigation.HideAndSeekScreen
@@ -47,6 +44,8 @@ fun HideAndSeekTopAppBar(
     canNavigateBack: Boolean,
     navigateUp: () -> Unit = {},
     currentScreen: HideAndSeekScreen,
+    doneButton: Boolean = false,
+    onDoneButtonClick: () -> Unit = {},
     viewModel: HideAndSeekViewModel,
     modifier: Modifier = Modifier
 ) {
@@ -63,13 +62,22 @@ fun HideAndSeekTopAppBar(
             if(canNavigateBack) {
                 IconButton(onClick = navigateUp) {
                     Icon(
-                        imageVector = Filled.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = null
                     )
                 }
             }
         },
-        actions = { TopAppBarDropdownMenu(currentScreen, { viewModel.endGame() }) }
+        actions = {
+            if(doneButton) {
+                IconButton(
+                    onClick = onDoneButtonClick
+                ) {
+                    Icon(Icons.Rounded.Check, contentDescription = stringResource(R.string.done))
+                }
+            }
+            else TopAppBarDropdownMenu(currentScreen, { viewModel.endGame() })
+        }
     )
 }
 
@@ -130,8 +138,8 @@ fun TopAppBarDropdownMenu(
     }
 }
 
-@Preview
-@Composable
-fun TopAppBarPreview() {
-    HideAndSeekTopAppBar("Hide and Seek", false, {}, HideAndSeekScreen.StartScreen, viewModel(factory = AppViewModelProvider.Factory))
-}
+//@Preview
+//@Composable
+//fun TopAppBarPreview() {
+//    HideAndSeekTopAppBar("Hide and Seek", false, {}, HideAndSeekScreen.StartScreen, viewModel(factory = AppViewModelProvider.Factory))
+//}

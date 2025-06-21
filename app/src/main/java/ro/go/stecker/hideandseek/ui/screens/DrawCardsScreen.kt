@@ -75,10 +75,10 @@ enum class DrawType(val draw: Int, val pick: Int) {
     Pick1(draw = 1, pick = 1)
 }
 
-var currentCardIndex by mutableIntStateOf(0)
-var drawCard by mutableStateOf(true)
-var selectCard by mutableStateOf(false)
-var loseCardsDialog by mutableStateOf(false)
+private var currentCardIndex by mutableIntStateOf(0)
+private var drawCard by mutableStateOf(true)
+private var selectCard by mutableStateOf(false)
+private var loseCardsDialog by mutableStateOf(false)
 
 @Composable
 fun DrawCardsScreen(

@@ -74,30 +74,46 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
         UI methods
      */
 
-    fun updateDeleteCardDialog() {
-        _uiState.update { currentState ->
-            currentState.copy(deleteCardDialog = !currentState.deleteCardDialog)
-        }
-    }
-
-    fun updateNoCardsDialog() {
-        _uiState.update { currentState ->
-            currentState.copy(noCardsDialog = !currentState.noCardsDialog)
-        }
-    }
-
-    fun updateTooManyCardsDialog() {
-        _uiState.update { currentState ->
-            currentState.copy(tooManyCardsDialog = !currentState.tooManyCardsDialog)
-        }
-    }
-
     fun setUuidToDelete(uuid: String) {
         _uiState.update { currentState ->
             currentState.copy(
                 uuidToDelete = uuid
             )
         }
+    }
+
+    fun selectCard(card: Card) {
+        _uiState.update {
+            it.copy(selectedCards = (it.selectedCards + card).toMutableList())
+        }
+    }
+
+    fun deselectCard(card: Card) {
+        _uiState.update {
+            it.copy(selectedCards = (it.selectedCards - card).toMutableList())
+        }
+    }
+
+    suspend fun endCardSelection(confirm: Boolean) {
+        if(_uiState.value.selectedCards.isNotEmpty() && confirm)
+            when (_uiState.value.selectCardMode) {
+                SelectMode.Duplicate -> {
+                    deleteCard(_uiState.value.uuidToDelete)
+                    addCardToDeck(Card(id = _uiState.value.selectedCards.first().id))
+                }
+
+                SelectMode.NotActive -> return
+
+                else -> {
+                    _uiState.value.selectedCards.forEach { deleteCard(it.uuid) }
+                    repeat(_uiState.value.selectCardMode.howMany + 1) {
+                        addCardToDeck(pickRandomCard())
+                    }
+                }
+            }
+
+        _uiState.update { it.copy(selectCardMode = SelectMode.NotActive) }
+        _uiState.value.selectedCards.clear()
     }
 
     /*
@@ -160,10 +176,45 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
     suspend fun deleteCard(uuid: String) = deckRepository.deleteCard(uuid)
 
     suspend fun playCard(card: Card, context: Context): Response<SentCard>? {
-        try {
-            return CardApi.retrofitService.newCard(card.toSentCard(context))
-        } catch (e: IOException) {
-            return null
+        if(card.id == 17) updateOverflowingChalice() /*If card is "Curse of the overflowing chalice"*/
+
+        if(card.isPlayable()) {
+            try {
+                return CardApi.retrofitService.newCard(card.toSentCard(context))
+            } catch (e: IOException) {
+                return null
+            }
+        } else throw IllegalStateException()
+    }
+
+
+    fun playSpecialCard(card: Card): Boolean {
+        when(card.id) {
+            //Duplicate Card
+            27 -> {
+                _uiState.update {
+                    it.copy(selectCardMode = SelectMode.Duplicate, uuidToDelete = card.uuid)
+                }
+                return true
+            }
+
+            //Discard 1, draw 2
+            29 -> {
+                _uiState.update {
+                    it.copy(selectCardMode = SelectMode.Discard1Draw2, uuidToDelete = card.uuid)
+                }
+                return true
+            }
+
+            //Discard 2, draw 3
+            30 -> {
+                _uiState.update {
+                    it.copy(selectCardMode = SelectMode.Discard2Draw3, uuidToDelete = card.uuid)
+                }
+                return true
+            }
+
+            else -> return false
         }
     }
 }
