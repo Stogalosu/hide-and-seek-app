@@ -27,3 +27,7 @@ When the seekers ask a question, depending on what type it is, the hiders draw 1
 ## Future Updates
 
 I'm currently working on a big update that introduces the ability to use the app as a seeker and receive the cards that the hiders play directly in the app.
+
+## Disclaimer
+
+This tool is not affiliated with or endorsed by JetLag. All copyrights and trademarks are reserved by their respective owners.
