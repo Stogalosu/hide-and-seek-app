@@ -52,11 +52,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import ro.go.stecker.hideandseek.data.Card
-import ro.go.stecker.hideandseek.data.HideAndSeekUiState
-import ro.go.stecker.hideandseek.data.HideAndSeekViewModel
+import ro.go.stecker.hideandseek.data.HiderUiState
+import ro.go.stecker.hideandseek.viewmodel.HiderViewModel
 import ro.go.stecker.hideandseek.data.DeckUiState
-import ro.go.stecker.hideandseek.data.GameState
-import ro.go.stecker.hideandseek.data.PreferencesUiState
 import ro.go.stecker.hideandseek.getActivity
 import ro.go.stecker.hideandseek.ui.navigation.HideAndSeekScreen
 import androidx.compose.runtime.getValue
@@ -73,6 +71,7 @@ import ro.go.stecker.hideandseek.data.isPlayable
 import ro.go.stecker.hideandseek.ui.CardImage
 import ro.go.stecker.hideandseek.ui.HideAndSeekTopAppBar
 import ro.go.stecker.hideandseek.ui.infraFontFamily
+import ro.go.stecker.hideandseek.viewmodel.HideAndSeekViewModel
 
 val discardRed = Color(224, 65, 65)
 val confirmGreen = Color(87, 201, 90)
@@ -83,19 +82,17 @@ val snackbarHostState = SnackbarHostState()
 @Composable
 fun HiderDeckScreen(
     onDrawCards: () -> Unit,
-    onNavigateToStartScreen: () -> Unit,
     onDetailsClick: (String) -> Unit,
     viewModel: HideAndSeekViewModel,
-    uiState: HideAndSeekUiState,
+    hiderViewModel: HiderViewModel,
+    hiderUiState: HiderUiState,
     deckUiState: DeckUiState,
-    preferencesUiState: PreferencesUiState,
     sharedTransitionScope: SharedTransitionScope,
-    animatedVisibilityScope: AnimatedVisibilityScope,
-    modifier: Modifier = Modifier
+    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     LaunchedEffect(Unit) {
         delay(500)
-        viewModel.clearTempCards()
+        hiderViewModel.clearTempCards()
     }
 
     val context = LocalContext.current
@@ -103,82 +100,67 @@ fun HiderDeckScreen(
     val coroutineScope = rememberCoroutineScope()
 
     BackHandler {
-        if(uiState.selectCardMode == SelectMode.NotActive) context.getActivity()?.finish()
-        else coroutineScope.launch { viewModel.endCardSelection(false) }
+        if(hiderUiState.selectCardMode == SelectMode.NotActive) context.getActivity()?.finish()
+        else coroutineScope.launch { hiderViewModel.endCardSelection(false) }
     }
 
-    LaunchedEffect(preferencesUiState.isGameStarted) {
-        if(preferencesUiState.isGameStarted == GameState.NotStarted)
-            onNavigateToStartScreen()
-    }
-
-    when(preferencesUiState.isGameStarted) {
-        GameState.Started -> {
-            Scaffold(
-                modifier = modifier,
-                topBar = {
-                    HideAndSeekTopAppBar(
-                        title =
-                            if(uiState.selectCardMode != SelectMode.NotActive) stringResource(R.string.select_n_cards, uiState.selectCardMode.howMany.toString())
-                            else stringResource(R.string.hider_deck),
-                        canNavigateBack = uiState.selectCardMode != SelectMode.NotActive,
-                        navigateUp = { coroutineScope.launch { viewModel.endCardSelection(false) } },
-                        currentScreen = HideAndSeekScreen.HiderDeck,
-                        doneButton = uiState.selectCardMode != SelectMode.NotActive,
-                        onDoneButtonClick = {
-                            coroutineScope.launch {
-                                if(uiState.selectedCards.size == 2) discardCardDialog = true
-                                else snackbarHostState.showSnackbar("Please select 2 cards!")
-                            }
-                                            },
-                        viewModel = viewModel
-                    )
-                },
-                floatingActionButton = {
-                    val current = LocalDensity.current
-                    ExtendedFloatingActionButton(
-                        onClick = {
-                            if (deckUiState.playerDeck.size >= 6) tooManyCardsDialog = true
-                            else if (deckUiState.cardDeck.sumOf { it.probability } <= 3) noCardsDialog = true
-                            else onDrawCards()
-                        },
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .onGloballyPositioned { coordinates ->
-                                fabHeight = with(current) { coordinates.size.height.toDp() }
-                            }
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Rounded.Add, contentDescription = stringResource(R.string.draw_cards))
-                            Text(
-                                text = stringResource(R.string.draw_cards),
-                                fontFamily = infraFontFamily,
-                                modifier = Modifier.padding(start = 8.dp)
-                            )
-                        }
+    Scaffold(
+        topBar = {
+            HideAndSeekTopAppBar(
+                title =
+                    if(hiderUiState.selectCardMode != SelectMode.NotActive) stringResource(R.string.select_n_cards, hiderUiState.selectCardMode.howMany.toString())
+                    else stringResource(R.string.hider_deck),
+                canNavigateBack = hiderUiState.selectCardMode != SelectMode.NotActive,
+                navigateUp = { coroutineScope.launch { hiderViewModel.endCardSelection(false) } },
+                currentScreen = HideAndSeekScreen.MainScreen,
+                doneButton = hiderUiState.selectCardMode != SelectMode.NotActive,
+                onDoneButtonClick = {
+                    coroutineScope.launch {
+                        if(hiderUiState.selectedCards.size == 2) discardCardDialog = true
+                        else snackbarHostState.showSnackbar("Please select 2 cards!")
                     }
+                                    },
+                viewModel = viewModel
+            )
+        },
+        floatingActionButton = {
+            val current = LocalDensity.current
+            ExtendedFloatingActionButton(
+                onClick = {
+                    if (deckUiState.playerDeck.size >= 6) tooManyCardsDialog = true
+                    else if (deckUiState.cardDeck.sumOf { it.probability } <= 3) noCardsDialog = true
+                    else onDrawCards()
                 },
-                snackbarHost = {
-                    SnackbarHost(hostState = snackbarHostState)
-                },
-            ) {innerPadding ->
-                HiderDeck(
-                    viewModel = viewModel,
-                    uiState = uiState,
-                    deckUiState = deckUiState,
-                    fabHeight = fabHeight,
-                    contentPadding = innerPadding,
-                    onDetailsClick = onDetailsClick,
-                    sharedTransitionScope = sharedTransitionScope,
-                    animatedVisibilityScope = animatedVisibilityScope
-                )
+                modifier = Modifier
+                    .padding(16.dp)
+                    .onGloballyPositioned { coordinates ->
+                        fabHeight = with(current) { coordinates.size.height.toDp() }
+                    }
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Rounded.Add, contentDescription = stringResource(R.string.draw_cards))
+                    Text(
+                        text = stringResource(R.string.draw_cards),
+                        fontFamily = infraFontFamily,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
             }
-        }
-
-        else -> {
-            viewModel.init()
-            LoadingScreen()
-        }
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
+    ) {innerPadding ->
+        HiderDeck(
+            viewModel = hiderViewModel,
+            uiState = hiderUiState,
+            deckUiState = deckUiState,
+            fabHeight = fabHeight,
+            contentPadding = innerPadding,
+            onDetailsClick = onDetailsClick,
+            sharedTransitionScope = sharedTransitionScope,
+            animatedVisibilityScope = animatedVisibilityScope
+        )
     }
 }
 
@@ -192,15 +174,14 @@ var duplicateCardDialog by mutableStateOf(false)
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun HiderDeck(
-    viewModel: HideAndSeekViewModel,
-    uiState: HideAndSeekUiState,
+    viewModel: HiderViewModel,
+    uiState: HiderUiState,
     deckUiState: DeckUiState,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     fabHeight: Dp,
     onDetailsClick: (String) -> Unit,
     sharedTransitionScope: SharedTransitionScope,
-    animatedVisibilityScope: AnimatedVisibilityScope,
-    modifier: Modifier = Modifier
+    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -289,19 +270,19 @@ fun HiderDeck(
     }
 
     //Dialog for no internet
-    if(noInternetDialog) {
-        AlertDialog(
-            onDismissRequest = { noInternetDialog = !noInternetDialog },
-            icon = { Icon(Icons.Rounded.Warning, tint = Color.Red, contentDescription = stringResource(R.string.no_internet)) },
-            title = { Text(stringResource(R.string.no_internet)) },
-            text = { Text(stringResource(R.string.no_internet_dialog)) },
-            confirmButton = {
-                TextButton(onClick = { noInternetDialog = !noInternetDialog }) {
-                    Text(stringResource(R.string.got_it))
-                }
-            }
-        )
-    }
+//    if(noInternetDialog) {
+//        AlertDialog(
+//            onDismissRequest = { noInternetDialog = !noInternetDialog },
+//            icon = { Icon(Icons.Rounded.Warning, tint = Color.Red, contentDescription = stringResource(R.string.no_internet)) },
+//            title = { Text(stringResource(R.string.no_internet)) },
+//            text = { Text(stringResource(R.string.no_internet_dialog)) },
+//            confirmButton = {
+//                TextButton(onClick = { noInternetDialog = !noInternetDialog }) {
+//                    Text(stringResource(R.string.got_it))
+//                }
+//            }
+//        )
+//    }
 
     //Dialog for duplicating a card
     if(duplicateCardDialog) {
@@ -379,8 +360,8 @@ fun HiderDeck(
 @Composable
 fun CardItem(
     card: Card,
-    uiState: HideAndSeekUiState,
-    viewModel: HideAndSeekViewModel,
+    uiState: HiderUiState,
+    viewModel: HiderViewModel,
     onDetailsClick: (String) -> Unit,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope

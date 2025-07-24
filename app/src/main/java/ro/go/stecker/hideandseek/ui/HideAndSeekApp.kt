@@ -1,5 +1,7 @@
 package ro.go.stecker.hideandseek.ui
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
@@ -19,6 +21,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -27,10 +30,15 @@ import androidx.navigation.compose.rememberNavController
 import ro.go.stecker.hideandseek.ui.navigation.HideAndSeekNavHost
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import ro.go.stecker.hideandseek.R
-import ro.go.stecker.hideandseek.data.HideAndSeekViewModel
+import ro.go.stecker.hideandseek.data.UiState
+import ro.go.stecker.hideandseek.network.NetworkStatus
+import ro.go.stecker.hideandseek.viewmodel.HideAndSeekViewModel
 import ro.go.stecker.hideandseek.ui.navigation.HideAndSeekScreen
+import ro.go.stecker.hideandseek.ui.screens.discardRed
 
 @Composable
 fun HideAndSeekApp(navController: NavHostController = rememberNavController()) {
@@ -49,6 +57,8 @@ fun HideAndSeekTopAppBar(
     viewModel: HideAndSeekViewModel,
     modifier: Modifier = Modifier
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+
     TopAppBar(
         modifier = modifier,
         title = { Text(text = title, fontFamily = infraFontFamily) },
@@ -69,6 +79,14 @@ fun HideAndSeekTopAppBar(
             }
         },
         actions = {
+            if(uiState.networkStatus == NetworkStatus.Unavailable)
+                Icon(
+                    painter = painterResource(R.drawable.ic_no_internet),
+                    tint = discardRed,
+                    contentDescription = stringResource(R.string.no_internet),
+                    modifier = Modifier.padding(8.dp)
+                )
+
             if(doneButton) {
                 IconButton(
                     onClick = onDoneButtonClick
@@ -76,7 +94,7 @@ fun HideAndSeekTopAppBar(
                     Icon(Icons.Rounded.Check, contentDescription = stringResource(R.string.done))
                 }
             }
-            else TopAppBarDropdownMenu(currentScreen, { viewModel.endGame() })
+            else TopAppBarDropdownMenu(currentScreen, { viewModel.exitGame() }, uiState)
         }
     )
 }
@@ -84,7 +102,8 @@ fun HideAndSeekTopAppBar(
 @Composable
 fun TopAppBarDropdownMenu(
     currentScreen: HideAndSeekScreen,
-    onEndGame: () -> Unit
+    onEndGame: () -> Unit,
+    uiState: UiState
 ) {
     var expanded by remember { mutableStateOf(false) }
     var confirmDialog by remember { mutableStateOf(false) }
@@ -99,6 +118,18 @@ fun TopAppBarDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
+            if(currentScreen == HideAndSeekScreen.MainScreen) {
+                DropdownMenuItem(
+                    text = {
+                        Column {
+                            Text(stringResource(R.string.access_code))
+                            Text(text = uiState.gameId.toString())
+                        }
+                    },
+                    onClick = {}
+                )
+            }
+
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.end_game)) },
                 leadingIcon = { Icon(Icons.Rounded.Close, contentDescription = null) },

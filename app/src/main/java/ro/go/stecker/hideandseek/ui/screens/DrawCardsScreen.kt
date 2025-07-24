@@ -51,10 +51,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
-import ro.go.stecker.hideandseek.AppViewModelProvider
+import ro.go.stecker.hideandseek.viewmodel.AppViewModelProvider
 import ro.go.stecker.hideandseek.R
-import ro.go.stecker.hideandseek.data.HideAndSeekUiState
-import ro.go.stecker.hideandseek.data.HideAndSeekViewModel
+import ro.go.stecker.hideandseek.data.HiderUiState
+import ro.go.stecker.hideandseek.viewmodel.HiderViewModel
 import ro.go.stecker.hideandseek.ui.CardImage
 import ro.go.stecker.hideandseek.ui.HideAndSeekTopAppBar
 import ro.go.stecker.hideandseek.ui.infraFontFamily
@@ -67,6 +67,7 @@ import androidx.compose.ui.Alignment
 import kotlinx.coroutines.delay
 import ro.go.stecker.hideandseek.data.getDescription
 import ro.go.stecker.hideandseek.data.getName
+import ro.go.stecker.hideandseek.viewmodel.HideAndSeekViewModel
 
 
 enum class DrawType(val draw: Int, val pick: Int) {
@@ -83,7 +84,8 @@ private var loseCardsDialog by mutableStateOf(false)
 @Composable
 fun DrawCardsScreen(
     viewModel: HideAndSeekViewModel,
-    uiState: HideAndSeekUiState,
+    hiderViewModel: HiderViewModel,
+    uiState: HiderUiState,
     navigateUp: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -107,7 +109,7 @@ fun DrawCardsScreen(
         }
     ) {innerPadding ->
         DrawCards(
-            viewModel = viewModel,
+            viewModel = hiderViewModel,
             uiState = uiState,
             navigateUp = navigateUp,
             contentPadding = innerPadding
@@ -118,8 +120,8 @@ fun DrawCardsScreen(
 
 @Composable
 fun DrawCards(
-    viewModel: HideAndSeekViewModel,
-    uiState: HideAndSeekUiState,
+    viewModel: HiderViewModel,
+    uiState: HiderUiState,
     navigateUp: () -> Unit,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier
@@ -306,8 +308,8 @@ fun DrawCards(
 
 @Composable
 fun DrawTypeSelector(
-    viewModel: HideAndSeekViewModel,
-    uiState: HideAndSeekUiState
+    viewModel: HiderViewModel,
+    uiState: HiderUiState
 ) {
     val coroutineScope = rememberCoroutineScope()
     var selectedDrawType by remember { mutableStateOf(DrawType.Pick1) }
@@ -390,5 +392,5 @@ fun RadioButtonWithText(
 @Preview
 @Composable
 fun DrawCardsScreenPreview() {
-    DrawCardsScreen(viewModel(factory = AppViewModelProvider.Factory), HideAndSeekUiState(), {})
+    DrawCardsScreen(viewModel(factory = AppViewModelProvider.Factory), viewModel(factory = AppViewModelProvider.Factory), HiderUiState(), {})
 }

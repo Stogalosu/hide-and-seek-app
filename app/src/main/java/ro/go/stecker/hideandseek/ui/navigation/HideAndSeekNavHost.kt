@@ -1,6 +1,5 @@
 package ro.go.stecker.hideandseek.ui.navigation
 
-import androidx.annotation.StringRes
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.core.tween
@@ -8,29 +7,37 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
-import ro.go.stecker.hideandseek.AppViewModelProvider
-import ro.go.stecker.hideandseek.R
-import ro.go.stecker.hideandseek.data.HideAndSeekViewModel
+import kotlinx.coroutines.flow.distinctUntilChanged
+import ro.go.stecker.hideandseek.network.NetworkStatus
+import ro.go.stecker.hideandseek.ui.dialogs.NoInternetDialog
+import ro.go.stecker.hideandseek.viewmodel.AppViewModelProvider
+import ro.go.stecker.hideandseek.viewmodel.HiderViewModel
 import ro.go.stecker.hideandseek.ui.screens.DetailsScreen
 import ro.go.stecker.hideandseek.ui.screens.DrawCardsScreen
-import ro.go.stecker.hideandseek.ui.screens.HiderDeckScreen
+import ro.go.stecker.hideandseek.ui.screens.MainScreen
 import ro.go.stecker.hideandseek.ui.screens.StartScreen
+import ro.go.stecker.hideandseek.viewmodel.HideAndSeekViewModel
+import ro.go.stecker.hideandseek.viewmodel.SeekerViewModel
 
-enum class HideAndSeekScreen(@StringRes val title: Int) {
-    StartScreen(R.string.app_name),
-    LoadingScreen(R.string.loading),
-    HiderDeck(R.string.hider_deck),
-    DetailsScreen(0),
-    DrawCards(R.string.draw_cards)
+enum class HideAndSeekScreen {
+    StartScreen,
+    LoadingScreen,
+    MainScreen,
+    DetailsScreen,
+    DrawCards,
+    NoInternetDialog
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -38,16 +45,26 @@ enum class HideAndSeekScreen(@StringRes val title: Int) {
 fun HideAndSeekNavHost(
     navController: NavHostController,
     hideAndSeekViewModel: HideAndSeekViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    hiderViewModel: HiderViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    seekerViewModel: SeekerViewModel = viewModel(factory = AppViewModelProvider.Factory),
     modifier: Modifier = Modifier,
 ) {
+    val hiderUiState by hiderViewModel.hiderUiState.collectAsState()
+    val deckUiState by hiderViewModel.deckUiState.collectAsState()
     val uiState by hideAndSeekViewModel.uiState.collectAsState()
-    val deckUiState by hideAndSeekViewModel.deckUiState.collectAsState()
-    val preferencesUiState by hideAndSeekViewModel.preferencesUiState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        snapshotFlow { uiState.networkStatus }
+            .distinctUntilChanged()
+            .collect { value ->
+                if(value == NetworkStatus.Unavailable) navController.navigate(HideAndSeekScreen.NoInternetDialog.name)
+            }
+    }
 
     SharedTransitionLayout {
         NavHost(
             navController = navController,
-            startDestination = HideAndSeekScreen.HiderDeck.name,
+            startDestination = HideAndSeekScreen.MainScreen.name,
             enterTransition = { slideInVertically(initialOffsetY = { it / 2 }) },
             exitTransition = {
                 slideOutVertically(
@@ -73,8 +90,8 @@ fun HideAndSeekNavHost(
         ) {
             composable(route = HideAndSeekScreen.StartScreen.name) {
                 StartScreen(
-                    onButtonClick = {
-                        navController.navigate(HideAndSeekScreen.HiderDeck.name)
+                    onGameStart = {
+                        navController.navigate(HideAndSeekScreen.MainScreen.name)
                     },
                     viewModel = hideAndSeekViewModel,
                     uiState = uiState
@@ -82,7 +99,7 @@ fun HideAndSeekNavHost(
             }
 
             composable(
-                route = HideAndSeekScreen.HiderDeck.name,
+                route = HideAndSeekScreen.MainScreen.name,
                 exitTransition = {
                     fadeOut(
                         tween(
@@ -91,14 +108,16 @@ fun HideAndSeekNavHost(
                     ))
                 }
             ) {
-                HiderDeckScreen(
+                MainScreen(
                     onDrawCards = { navController.navigate(HideAndSeekScreen.DrawCards.name) },
                     onNavigateToStartScreen = { navController.navigate(HideAndSeekScreen.StartScreen.name) },
                     onDetailsClick = { navController.navigate(HideAndSeekScreen.DetailsScreen.name + "/$it") },
                     viewModel = hideAndSeekViewModel,
-                    uiState = uiState,
+                    hiderViewModel = hiderViewModel,
+                    seekerViewModel = seekerViewModel,
+                    hiderUiState = hiderUiState,
                     deckUiState = deckUiState,
-                    preferencesUiState = preferencesUiState,
+                    uiState = uiState,
                     sharedTransitionScope = this@SharedTransitionLayout,
                     animatedVisibilityScope = this@composable
                 )
@@ -121,13 +140,20 @@ fun HideAndSeekNavHost(
             composable(route = HideAndSeekScreen.DrawCards.name) {
                 DrawCardsScreen(
                     viewModel = hideAndSeekViewModel,
-                    uiState = uiState,
+                    hiderViewModel = hiderViewModel,
+                    uiState = hiderUiState,
                     navigateUp = {
                         navController.popBackStack(
-                            route = HideAndSeekScreen.HiderDeck.name,
+                            route = HideAndSeekScreen.MainScreen.name,
                             inclusive = false
                         )
                     }
+                )
+            }
+
+            dialog(route = HideAndSeekScreen.NoInternetDialog.name) {
+                NoInternetDialog(
+                    onDismissRequest = { navController.popBackStack() }
                 )
             }
 

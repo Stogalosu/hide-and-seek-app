@@ -1,8 +1,10 @@
 <resources>
     <string name="app_name">Hide and Seek</string>
     <string name="welcome_1">Welcome to Hide and Seek!</string>
-    <string name="welcome_2">This app is used to draw cards when you are the hider. Start a new round, then draw cards as the game progresses.</string>
-    <string name="start_game">Start the game!</string>
+    <string name="welcome_2">This app is used to draw and play cards when you are the hider or receive curses and ask questions when you are the seeker. Select your role to begin!</string>
+    <string name="im_a_hider">I\'m a hider!</string>
+    <string name="im_a_seeker">I\'m a seeker!</string>
+    <string name="start">Start!</string>
     <string name="more_options">More options</string>
     <string name="end_game">End game</string>
     <string name="end_game_question">Are you sure you want to end this game?</string>
@@ -20,9 +22,9 @@
     <string name="no_cards_left">No cards left!</string>
     <string name="no_cards_dialog">You did it! You reached the end of the pack! Play the cards you have or start a new game.</string>
     <string name="got_it">Got it!</string>
-    <string name="connecting_to_server">Connecting to server...</string>
+    <string name="connecting_to_server">Connecting to server…</string>
     <string name="no_internet">No internet connection!</string>
-    <string name="no_internet_dialog">Couldn\'t play card, server not available. Check your internet connection. If you have internet but still get this error, check server page: https://stecker.ddns.net:3000</string>
+    <string name="no_internet_dialog">You don\'t have a working internet connection! If you\'re a hider, you won\'t be able to play cards and if you\'re a seeker, you won\'t be able to receive curses. You can monitor your connection by looking in the upper-right corner.</string>
     <string name="card">Card</string>
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
@@ -49,7 +51,22 @@
     <string name="duplicate_card">Duplicate card</string>
     <string name="duplicate_card_dialog">Are you sure you want to duplicate the \"%1$s\" card?</string>
     <string name="yes">Yes!</string>
-    <string name="done">Done</string>
+    <string name="done">Done!</string>
+    <string name="you_need_a_name">Dear %1$s, you need a name…</string>
+    <string name="enter_your_name_here">Enter your name here…</string>
+    <string name="new_game">New game</string>
+    <string name="access_code">Access code: </string>
+    <string name="new_game_text">Share this code with the seekers.</string>
+    <string name="waiting_for_players">Waiting for players…</string>
+    <string name="abandon_game">Abandon game</string>
+    <string name="abandon_game_dialog">Are you sure you want to abandon this game?</string>
+    <string name="join_game">Join game</string>
+    <string name="enter_access_code">Enter game access code…</string>
+    <string name="join">Join</string>
+    <string name="couldnt_find_game">Couldn\'t find game. Please try again.</string>
+    <string name="player_joined">%1$s joined</string>
+    <string name="waiting_to_start_game">Waiting for hider to start the game…</string>
+    <string name="exit_game">Exit game</string>
     
     <string name="curse_bad_influencer">Curse of the bad influencer</string>
     <string name="curse_bird_guide">Curse of the bird guide</string>

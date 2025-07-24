@@ -1,4 +1,4 @@
-package ro.go.stecker.hideandseek.data
+package ro.go.stecker.hideandseek.viewmodel
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
@@ -9,25 +9,30 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import retrofit2.Response
+import ro.go.stecker.hideandseek.data.Card
+import ro.go.stecker.hideandseek.data.DeckUiState
+import ro.go.stecker.hideandseek.data.HiderUiState
+import ro.go.stecker.hideandseek.data.SelectMode
+import ro.go.stecker.hideandseek.data.SentCard
 import ro.go.stecker.hideandseek.data.database.DeckRepository
+import ro.go.stecker.hideandseek.data.isPlayable
+import ro.go.stecker.hideandseek.data.toSentCard
 import ro.go.stecker.hideandseek.network.CardApi
 import ro.go.stecker.hideandseek.ui.screens.DrawType
 import java.io.IOException
-import kotlin.random.Random.Default.nextInt
+import kotlin.random.Random
 
-class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRepository: PreferencesRepository): ViewModel() {
+class HiderViewModel(val deckRepository: DeckRepository): ViewModel() {
 
     /*
         StateFlow declarations
      */
 
-    private val _uiState = MutableStateFlow(HideAndSeekUiState())
-    val uiState: StateFlow<HideAndSeekUiState> = _uiState.asStateFlow()
+    private val _hiderUiState = MutableStateFlow(HiderUiState())
+    val hiderUiState: StateFlow<HiderUiState> = _hiderUiState.asStateFlow()
 
     var deckUiState: StateFlow<DeckUiState> =
         combine(
@@ -37,45 +42,16 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
             DeckUiState(playerDeck = playerDeck, cardDeck = cardDeck)
         }.stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(),
+            started = SharingStarted.Companion.WhileSubscribed(),
             initialValue = DeckUiState()
         )
-
-    private val _preferencesUiState = MutableStateFlow(PreferencesUiState())
-    val preferencesUiState: StateFlow<PreferencesUiState> = _preferencesUiState.asStateFlow()
-
-    /*
-        Game state methods
-     */
-
-    fun init() {
-        viewModelScope.launch {
-            preferencesRepository.isGameStarted
-                .map { PreferencesUiState(it) }
-                .collect { value -> _preferencesUiState.value = value}
-        }
-    }
-
-    suspend fun initAtGameStart() {
-        if(preferencesUiState.value.isGameStarted == GameState.NotStarted) {
-            deckRepository.clearDeck()
-            preferencesRepository.startGame()
-        }
-        deckRepository.setCardDeck(CardsRepository)
-    }
-
-    fun endGame() {
-        viewModelScope.launch {
-            preferencesRepository.endGame()
-        }
-    }
 
     /*
         UI methods
      */
 
     fun setUuidToDelete(uuid: String) {
-        _uiState.update { currentState ->
+        _hiderUiState.update { currentState ->
             currentState.copy(
                 uuidToDelete = uuid
             )
@@ -83,37 +59,37 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
     }
 
     fun selectCard(card: Card) {
-        _uiState.update {
+        _hiderUiState.update {
             it.copy(selectedCards = (it.selectedCards + card).toMutableList())
         }
     }
 
     fun deselectCard(card: Card) {
-        _uiState.update {
+        _hiderUiState.update {
             it.copy(selectedCards = (it.selectedCards - card).toMutableList())
         }
     }
 
     suspend fun endCardSelection(confirm: Boolean) {
-        if(_uiState.value.selectedCards.isNotEmpty() && confirm)
-            when (_uiState.value.selectCardMode) {
+        if(_hiderUiState.value.selectedCards.isNotEmpty() && confirm)
+            when (_hiderUiState.value.selectCardMode) {
                 SelectMode.Duplicate -> {
-                    deleteCard(_uiState.value.uuidToDelete)
-                    addCardToDeck(Card(id = _uiState.value.selectedCards.first().id))
+                    deleteCard(_hiderUiState.value.uuidToDelete)
+                    addCardToDeck(Card(id = _hiderUiState.value.selectedCards.first().id))
                 }
 
                 SelectMode.NotActive -> return
 
                 else -> {
-                    _uiState.value.selectedCards.forEach { deleteCard(it.uuid) }
-                    repeat(_uiState.value.selectCardMode.howMany + 1) {
+                    _hiderUiState.value.selectedCards.forEach { deleteCard(it.uuid) }
+                    repeat(_hiderUiState.value.selectCardMode.howMany + 1) {
                         addCardToDeck(pickRandomCard())
                     }
                 }
             }
 
-        _uiState.update { it.copy(selectCardMode = SelectMode.NotActive) }
-        _uiState.value.selectedCards.clear()
+        _hiderUiState.update { it.copy(selectCardMode = SelectMode.NotActive) }
+        _hiderUiState.value.selectedCards.clear()
     }
 
     /*
@@ -122,10 +98,10 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
 
     suspend fun pickRandomCard(): Card {
         delay(50)
-        var totalWeight = deckUiState.value.cardDeck.sumOf { it.probability }
+        val totalWeight = deckUiState.value.cardDeck.sumOf { it.probability }
         var random = 0
         try {
-            random = nextInt(1, totalWeight)
+            random = Random.Default.nextInt(1, totalWeight)
         } catch (e: IllegalArgumentException) {
 
         }
@@ -142,29 +118,29 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
     }
 
     suspend fun drawTempCards(drawType: DrawType) {
-        var newCards = _uiState.value.drawnTempCards
+        var newCards = _hiderUiState.value.drawnTempCards
         repeat(drawType.draw) {
             newCards = newCards + pickRandomCard()
         }
 
-        if (_uiState.value.overflowingChalice in 1..3) {
+        if (_hiderUiState.value.overflowingChalice in 1..3) {
             newCards = newCards + pickRandomCard()
             updateOverflowingChalice()
         }
 
-        _uiState.update {
+        _hiderUiState.update {
             it.copy(drawnTempCards = newCards)
         }
     }
 
     fun clearTempCards() {
-        _uiState.update { currentState ->
+        _hiderUiState.update { currentState ->
             currentState.copy(drawnTempCards = listOf())
         }
     }
 
     fun updateOverflowingChalice() {
-        _uiState.update { currentState ->
+        _hiderUiState.update { currentState ->
             currentState.copy(
                 overflowingChalice = currentState.overflowingChalice + 1
             )
@@ -192,7 +168,7 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
         when(card.id) {
             //Duplicate Card
             27 -> {
-                _uiState.update {
+                _hiderUiState.update {
                     it.copy(selectCardMode = SelectMode.Duplicate, uuidToDelete = card.uuid)
                 }
                 return true
@@ -200,7 +176,7 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
 
             //Discard 1, draw 2
             29 -> {
-                _uiState.update {
+                _hiderUiState.update {
                     it.copy(selectCardMode = SelectMode.Discard1Draw2, uuidToDelete = card.uuid)
                 }
                 return true
@@ -208,7 +184,7 @@ class HideAndSeekViewModel(val deckRepository: DeckRepository, val preferencesRe
 
             //Discard 2, draw 3
             30 -> {
-                _uiState.update {
+                _hiderUiState.update {
                     it.copy(selectCardMode = SelectMode.Discard2Draw3, uuidToDelete = card.uuid)
                 }
                 return true
