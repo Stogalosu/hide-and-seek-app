@@ -76,8 +76,6 @@ import ro.go.stecker.hideandseek.viewmodel.HideAndSeekViewModel
 val discardRed = Color(224, 65, 65)
 val confirmGreen = Color(87, 201, 90)
 
-val snackbarHostState = SnackbarHostState()
-
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun HiderDeckScreen(
@@ -88,7 +86,8 @@ fun HiderDeckScreen(
     hiderUiState: HiderUiState,
     deckUiState: DeckUiState,
     sharedTransitionScope: SharedTransitionScope,
-    animatedVisibilityScope: AnimatedVisibilityScope
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    snackbarHostState: SnackbarHostState
 ) {
     LaunchedEffect(Unit) {
         delay(500)
@@ -98,6 +97,7 @@ fun HiderDeckScreen(
     val context = LocalContext.current
     var fabHeight by remember { mutableStateOf(0.dp) }
     val coroutineScope = rememberCoroutineScope()
+    val selectCardsText = stringResource(R.string.please_select_2_cards)
 
     BackHandler {
         if(hiderUiState.selectCardMode == SelectMode.NotActive) context.getActivity()?.finish()
@@ -117,10 +117,11 @@ fun HiderDeckScreen(
                 onDoneButtonClick = {
                     coroutineScope.launch {
                         if(hiderUiState.selectedCards.size == 2) discardCardDialog = true
-                        else snackbarHostState.showSnackbar("Please select 2 cards!")
+                        else snackbarHostState.showSnackbar(selectCardsText)
                     }
-                                    },
-                viewModel = viewModel
+                },
+                viewModel = viewModel,
+                snackbarHostState = snackbarHostState
             )
         },
         floatingActionButton = {

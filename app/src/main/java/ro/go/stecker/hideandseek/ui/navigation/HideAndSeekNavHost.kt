@@ -6,10 +6,12 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -53,6 +55,8 @@ fun HideAndSeekNavHost(
     val deckUiState by hiderViewModel.deckUiState.collectAsState()
     val uiState by hideAndSeekViewModel.uiState.collectAsState()
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
     LaunchedEffect(Unit) {
         snapshotFlow { uiState.networkStatus }
             .distinctUntilChanged()
@@ -94,7 +98,8 @@ fun HideAndSeekNavHost(
                         navController.navigate(HideAndSeekScreen.MainScreen.name)
                     },
                     viewModel = hideAndSeekViewModel,
-                    uiState = uiState
+                    uiState = uiState,
+                    snackbarHostState = snackbarHostState
                 )
             }
 
@@ -119,7 +124,8 @@ fun HideAndSeekNavHost(
                     deckUiState = deckUiState,
                     uiState = uiState,
                     sharedTransitionScope = this@SharedTransitionLayout,
-                    animatedVisibilityScope = this@composable
+                    animatedVisibilityScope = this@composable,
+                    snackbarHostState = snackbarHostState
                 )
             }
 
@@ -147,7 +153,8 @@ fun HideAndSeekNavHost(
                             route = HideAndSeekScreen.MainScreen.name,
                             inclusive = false
                         )
-                    }
+                    },
+                    snackbarHostState = snackbarHostState
                 )
             }
 

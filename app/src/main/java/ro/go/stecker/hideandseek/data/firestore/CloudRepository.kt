@@ -13,6 +13,7 @@ interface CloudRepo {
     fun createPlayer(player: Player)
     fun updatePlayerName(player: Player, newName: String)
     fun updatePlayerType(player: Player, newType: PlayerType)
+    fun getAllPlayersInGame(gameId: Int, onSuccess: (List<Player>) -> Unit)
     fun newGame(game: Game)
     fun addPlayerToGame(gameId: Int, player: Player, onSuccess: () -> Unit, onFail: () -> Unit)
     fun removePlayerFromGame(gameId: Int, player: Player)
@@ -36,6 +37,13 @@ class CloudRepository: CloudRepo {
 
     override fun updatePlayerType(player: Player, newType: PlayerType) {
         db.collection("players").document(player.uuid).update("type", newType)
+    }
+
+    override fun getAllPlayersInGame(gameId: Int, onSuccess: (List<Player>) -> Unit) {
+        db.collection("games").document(gameId.toString()).get()
+            .addOnSuccessListener { doc ->
+                doc.toObject<Game>()?.players?.let { onSuccess(it) }
+            }
     }
 
     override fun newGame(game: Game) {

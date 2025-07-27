@@ -3,6 +3,7 @@ package ro.go.stecker.hideandseek.ui.screens
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import ro.go.stecker.hideandseek.data.DeckUiState
@@ -26,7 +27,8 @@ fun MainScreen(
     deckUiState: DeckUiState,
     uiState: UiState,
     sharedTransitionScope: SharedTransitionScope,
-    animatedVisibilityScope: AnimatedVisibilityScope
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    snackbarHostState: SnackbarHostState
 ) {
     LaunchedEffect(uiState.gameState) {
         if(uiState.gameState == GameState.NotStarted)
@@ -44,13 +46,15 @@ fun MainScreen(
                 deckUiState = deckUiState,
                 sharedTransitionScope = sharedTransitionScope,
                 animatedVisibilityScope = animatedVisibilityScope,
+                snackbarHostState = snackbarHostState
             )
         }
 
         GameState.Seeker -> {
             SeekerScreen(
                 seekerViewModel = seekerViewModel,
-                viewModel = viewModel
+                viewModel = viewModel,
+                snackbarHostState = snackbarHostState
             )
         }
 

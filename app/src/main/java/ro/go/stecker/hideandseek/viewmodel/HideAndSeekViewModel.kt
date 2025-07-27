@@ -108,6 +108,8 @@ class HideAndSeekViewModel(
         cloudRepository.updatePlayerName(_uiState.value.player, name)
     }
 
+    fun getAllPlayersInGame(onSuccess: (List<Player>) -> Unit) = cloudRepository.getAllPlayersInGame(gameId = _uiState.value.gameId, onSuccess = onSuccess)
+
     fun newGame(playerType: PlayerType): Int {
         val id = nextInt(100000, 999999)
         val player = _uiState.value.player.copy(type = playerType)

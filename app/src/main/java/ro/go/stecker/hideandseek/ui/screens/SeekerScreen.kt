@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -30,17 +32,22 @@ import ro.go.stecker.hideandseek.viewmodel.SeekerViewModel
 @Composable
 fun SeekerScreen(
     seekerViewModel: SeekerViewModel,
-    viewModel: HideAndSeekViewModel
+    viewModel: HideAndSeekViewModel,
+    snackbarHostState: SnackbarHostState
 ) {
     var isGameStarted by remember { mutableStateOf(false) }
 
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
         topBar = {
             HideAndSeekTopAppBar(
                 title = "Seeker",
                 canNavigateBack = false,
                 currentScreen = HideAndSeekScreen.MainScreen,
-                viewModel = viewModel
+                viewModel = viewModel,
+                snackbarHostState = snackbarHostState
             )
         }
     ) { innerPaddings ->

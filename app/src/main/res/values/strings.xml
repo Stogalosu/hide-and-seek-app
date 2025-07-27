@@ -67,6 +67,11 @@
     <string name="player_joined">%1$s joined</string>
     <string name="waiting_to_start_game">Waiting for hider to start the game…</string>
     <string name="exit_game">Exit game</string>
+    <string name="exit_game_question">Are you sure you want to exit this game?</string>
+    <string name="copied_code">Copied code to clipboard.</string>
+    <string name="please_select_2_cards">Please select 2 cards!</string>
+    <string name="players">Players</string>
+    <string name="close">Close</string>
     
     <string name="curse_bad_influencer">Curse of the bad influencer</string>
     <string name="curse_bird_guide">Curse of the bird guide</string>

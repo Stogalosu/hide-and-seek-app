@@ -36,6 +36,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -87,6 +89,7 @@ fun DrawCardsScreen(
     hiderViewModel: HiderViewModel,
     uiState: HiderUiState,
     navigateUp: () -> Unit,
+    snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier
 ) {
     val onBackClick = {
@@ -98,13 +101,17 @@ fun DrawCardsScreen(
 
     Scaffold(
         modifier = modifier,
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
         topBar = {
             HideAndSeekTopAppBar(
                 title = stringResource(R.string.draw_cards),
                 canNavigateBack = true,
                 navigateUp = { onBackClick() },
                 currentScreen = HideAndSeekScreen.DrawCards,
-                viewModel = viewModel
+                viewModel = viewModel,
+                snackbarHostState = snackbarHostState
             )
         }
     ) {innerPadding ->
@@ -114,7 +121,6 @@ fun DrawCardsScreen(
             navigateUp = navigateUp,
             contentPadding = innerPadding
         )
-
     }
 }
 
@@ -392,5 +398,5 @@ fun RadioButtonWithText(
 @Preview
 @Composable
 fun DrawCardsScreenPreview() {
-    DrawCardsScreen(viewModel(factory = AppViewModelProvider.Factory), viewModel(factory = AppViewModelProvider.Factory), HiderUiState(), {})
+    DrawCardsScreen(viewModel(factory = AppViewModelProvider.Factory), viewModel(factory = AppViewModelProvider.Factory), HiderUiState(), {}, SnackbarHostState())
 }
