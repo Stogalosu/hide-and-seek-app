@@ -122,7 +122,10 @@ fun TopAppBarDropdownMenu(
                         containerColor = MaterialTheme.colorScheme.errorContainer,
                         contentColor = MaterialTheme.colorScheme.onErrorContainer
                     ),
-                    onClick = { onEndGame() }
+                    onClick = {
+                        confirmDialog = false
+                        onEndGame()
+                    }
                 ) {
                     Text(stringResource(R.string.end_game))
                 }

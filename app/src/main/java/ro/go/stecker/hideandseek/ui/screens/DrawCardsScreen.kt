@@ -1,5 +1,6 @@
 package ro.go.stecker.hideandseek.ui.screens
 
+import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
@@ -21,7 +22,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -39,6 +39,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -64,7 +65,10 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalConfiguration
 import kotlinx.coroutines.delay
+import ro.go.stecker.hideandseek.data.GameState
+import ro.go.stecker.hideandseek.data.PreferencesUiState
 import ro.go.stecker.hideandseek.data.getDescription
 import ro.go.stecker.hideandseek.data.getName
 
@@ -84,7 +88,9 @@ private var loseCardsDialog by mutableStateOf(false)
 fun DrawCardsScreen(
     viewModel: HideAndSeekViewModel,
     uiState: HideAndSeekUiState,
+    preferencesUiState: PreferencesUiState,
     navigateUp: () -> Unit,
+    onNavigateToStartScreen: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val onBackClick = {
@@ -93,6 +99,11 @@ fun DrawCardsScreen(
     }
 
     BackHandler { onBackClick() }
+
+    LaunchedEffect(preferencesUiState.isGameStarted) {
+        if(preferencesUiState.isGameStarted == GameState.NotStarted)
+            onNavigateToStartScreen()
+    }
 
     Scaffold(
         modifier = modifier,
@@ -126,6 +137,8 @@ fun DrawCards(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val screenWidth = LocalWindowInfo.current.containerSize.width
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     if(loseCardsDialog) {
         AlertDialog(
@@ -162,11 +175,66 @@ fun DrawCards(
     }
 
     Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .padding(contentPadding)
             .padding(16.dp)
+            .fillMaxSize()
     ) {
-        Spacer(modifier = Modifier.weight(4f))
+        val weight =
+            if(isLandscape) 3f
+            else 1.75f
+
+        AnimatedContent(
+            targetState = currentCardIndex,
+            transitionSpec = {
+                if(targetState > initialState) {
+                    slideInHorizontally(
+                        animationSpec = tween(durationMillis = 300),
+                        initialOffsetX = { screenWidth }
+                    ).togetherWith(
+                        slideOutHorizontally(
+                            animationSpec = tween(durationMillis = 300),
+                            targetOffsetX = { -screenWidth }
+                        )
+                    )
+                } else {
+                    slideInHorizontally(
+                        animationSpec = tween(durationMillis = 300),
+                        initialOffsetX = { -screenWidth }
+                    ).togetherWith(
+                        slideOutHorizontally(
+                            animationSpec = tween(durationMillis = 300),
+                            targetOffsetX = { screenWidth }
+                        )
+                    )
+                }
+            },
+            modifier = Modifier
+                .padding(horizontal = 0.dp)
+                .weight(weight)
+        ) { currentIndex ->
+            if(uiState.drawnTempCards.isNotEmpty() && currentIndex <= uiState.drawnTempCards.lastIndex) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    CardImage(
+                        card = uiState.drawnTempCards[currentIndex],
+                        clickable = false,
+                        imageModifier = Modifier
+                            .padding(5.dp)
+                            .clip(RoundedCornerShape(2))
+//                            .size(width = 250.dp, height = 350.dp)
+                    )
+                }
+            }
+        }
+
+        if(uiState.drawnTempCards.isEmpty()) Spacer(modifier = Modifier.weight(weight))
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -205,60 +273,6 @@ fun DrawCards(
                 )
             }
         }
-        Spacer(modifier = Modifier.weight(3f))
-    }
-
-    Column(
-        verticalArrangement = Arrangement.SpaceBetween,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .padding(contentPadding)
-            .padding(top = 16.dp)
-            .fillMaxSize()
-    ) {
-        AnimatedContent(
-            targetState = currentCardIndex,
-            transitionSpec = {
-                if(targetState > initialState) {
-                    slideInHorizontally(
-                        animationSpec = tween(durationMillis = 300),
-                        initialOffsetX = { screenWidth }
-                    ).togetherWith(
-                        slideOutHorizontally(
-                            animationSpec = tween(durationMillis = 300),
-                            targetOffsetX = { -screenWidth }
-                        )
-                    )
-                } else {
-                    slideInHorizontally(
-                        animationSpec = tween(durationMillis = 300),
-                        initialOffsetX = { -screenWidth }
-                    ).togetherWith(
-                        slideOutHorizontally(
-                            animationSpec = tween(durationMillis = 300),
-                            targetOffsetX = { screenWidth }
-                        )
-                    )
-                }
-            },
-            modifier = Modifier.padding(horizontal = 0.dp)
-        ) { currentIndex ->
-            if(uiState.drawnTempCards.isNotEmpty() && currentIndex <= uiState.drawnTempCards.lastIndex) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    CardImage(
-                        card = uiState.drawnTempCards[currentIndex],
-                        clickable = false,
-                        imageModifier = Modifier
-                            .padding(5.dp)
-                            .clip(RoundedCornerShape(2))
-                            .size(width = 250.dp, height = 350.dp)
-                    )
-                }
-            }
-        }
 
         AnimatedVisibility(
             visible = drawCard,
@@ -266,39 +280,50 @@ fun DrawCards(
         ) {
             DrawTypeSelector(
                 viewModel = viewModel,
-                uiState = uiState
+                uiState = uiState,
+                isLandscape = isLandscape
             )
         }
 
         AnimatedVisibility(
             visible = selectCard,
-            enter = fadeIn()
+            enter = fadeIn(),
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .padding(top = 108.dp, bottom = 32.dp)
-                    .padding(horizontal = 32.dp)
-            ) {
-                AnimatedContent(
-                    targetState = currentCardIndex
-                ) { targetState ->
-                    Text(stringResource(uiState.drawnTempCards[targetState].getDescription()))
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                Button(
-                    onClick = {
-                        coroutineScope.launch {
-                            viewModel.addCardToDeck(uiState.drawnTempCards[currentCardIndex])
-                            delay(300)
-                            selectCard = false
-                            drawCard = true
-                        }
-                        navigateUp()
+            AnimatedContent(
+                targetState = currentCardIndex
+            ) { targetState ->
+                Text(
+                    text = stringResource(uiState.drawnTempCards[targetState].getDescription()),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .padding(horizontal = 32.dp)
+                        .padding(top = 16.dp)
+                )
+            }
+        }
+
+        AnimatedVisibility(
+            visible = selectCard,
+            enter = fadeIn(),
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        ) {
+            Button(
+                onClick = {
+                    coroutineScope.launch {
+                        viewModel.addCardToDeck(uiState.drawnTempCards[currentCardIndex])
+                        selectCard = false
+                        drawCard = true
                     }
-                ) {
-                    Text(stringResource(R.string.pick_card))
-                }
+                    navigateUp()
+                },
+                modifier = Modifier
+                    .padding(bottom = 32.dp)
+
+            ) {
+                Text(stringResource(R.string.pick_card))
             }
         }
     }
@@ -307,31 +332,61 @@ fun DrawCards(
 @Composable
 fun DrawTypeSelector(
     viewModel: HideAndSeekViewModel,
-    uiState: HideAndSeekUiState
+    uiState: HideAndSeekUiState,
+    isLandscape: Boolean
 ) {
     val coroutineScope = rememberCoroutineScope()
     var selectedDrawType by remember { mutableStateOf(DrawType.Pick1) }
 
-    Card(modifier = Modifier.padding(48.dp)) {
+    Card(modifier = Modifier.padding(32.dp)) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(8.dp)) {
-            RadioButtonWithText(
-                text = R.string.draw_1,
-                drawType = DrawType.Pick1,
-                selectedDrawType = selectedDrawType,
-                onClick = { selectedDrawType = DrawType.Pick1 }
-            )
-            RadioButtonWithText(
-                text = R.string.draw_2_pick_1,
-                drawType = DrawType.Draw2Pick1,
-                selectedDrawType = selectedDrawType,
-                onClick = { selectedDrawType = DrawType.Draw2Pick1 }
-            )
-            RadioButtonWithText(
-                text = R.string.draw_3_pick_1,
-                drawType = DrawType.Draw3Pick1,
-                selectedDrawType = selectedDrawType,
-                onClick = { selectedDrawType = DrawType.Draw3Pick1 }
-            )
+            if(!isLandscape) {
+                Column {
+                    RadioButtonWithText(
+                        text = R.string.draw_1,
+                        drawType = DrawType.Pick1,
+                        selectedDrawType = selectedDrawType,
+                        onClick = { selectedDrawType = DrawType.Pick1 },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    RadioButtonWithText(
+                        text = R.string.draw_2_pick_1,
+                        drawType = DrawType.Draw2Pick1,
+                        selectedDrawType = selectedDrawType,
+                        onClick = { selectedDrawType = DrawType.Draw2Pick1 },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    RadioButtonWithText(
+                        text = R.string.draw_3_pick_1,
+                        drawType = DrawType.Draw3Pick1,
+                        selectedDrawType = selectedDrawType,
+                        onClick = { selectedDrawType = DrawType.Draw3Pick1 },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+            else {
+                Row(horizontalArrangement = Arrangement.SpaceEvenly) {
+                    RadioButtonWithText(
+                        text = R.string.draw_1,
+                        drawType = DrawType.Pick1,
+                        selectedDrawType = selectedDrawType,
+                        onClick = { selectedDrawType = DrawType.Pick1 }
+                    )
+                    RadioButtonWithText(
+                        text = R.string.draw_2_pick_1,
+                        drawType = DrawType.Draw2Pick1,
+                        selectedDrawType = selectedDrawType,
+                        onClick = { selectedDrawType = DrawType.Draw2Pick1 }
+                    )
+                    RadioButtonWithText(
+                        text = R.string.draw_3_pick_1,
+                        drawType = DrawType.Draw3Pick1,
+                        selectedDrawType = selectedDrawType,
+                        onClick = { selectedDrawType = DrawType.Draw3Pick1 }
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(4.dp))
 
@@ -367,16 +422,16 @@ fun RadioButtonWithText(
     text: Int,
     drawType: DrawType,
     selectedDrawType: DrawType,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
+        modifier = modifier
             .selectable(
                 selected = selectedDrawType == drawType,
                 onClick = onClick
             )
-            .fillMaxWidth()
     ) {
         RadioButton(
             selected = selectedDrawType == drawType,
@@ -390,5 +445,5 @@ fun RadioButtonWithText(
 @Preview
 @Composable
 fun DrawCardsScreenPreview() {
-    DrawCardsScreen(viewModel(factory = AppViewModelProvider.Factory), HideAndSeekUiState(), {})
+    DrawCardsScreen(viewModel(factory = AppViewModelProvider.Factory), HideAndSeekUiState(), PreferencesUiState(), {}, {})
 }

@@ -122,12 +122,9 @@ fun HideAndSeekNavHost(
                 DrawCardsScreen(
                     viewModel = hideAndSeekViewModel,
                     uiState = uiState,
-                    navigateUp = {
-                        navController.popBackStack(
-                            route = HideAndSeekScreen.HiderDeck.name,
-                            inclusive = false
-                        )
-                    }
+                    preferencesUiState = preferencesUiState,
+                    navigateUp = { navController.popBackStack() },
+                    onNavigateToStartScreen = { navController.navigate(HideAndSeekScreen.StartScreen.name) }
                 )
             }
 
