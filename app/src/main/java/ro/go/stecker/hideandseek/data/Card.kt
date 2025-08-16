@@ -1,10 +1,9 @@
 package ro.go.stecker.hideandseek.data
 
-import android.content.Context
 import androidx.annotation.*
 import androidx.room.*
 import ro.go.stecker.hideandseek.R
-import com.google.gson.annotations.SerializedName
+import ro.go.stecker.hideandseek.data.firestore.Player
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -59,15 +58,18 @@ fun Card.isPlayable(): Boolean {
     return CardsRepository[this.id].isPlayable
 }
 
-fun Card.toSentCard(context: Context): SentCard {
-    return SentCard(name = context.getString(this.getName()))
+fun Card.toSentCard(gameId: Int, sender: Player): SentCard {
+    return SentCard(
+        id = this.id,
+        uuid = this.uuid,
+        gameId = gameId,
+        sender = sender
+    )
 }
 
 data class SentCard(
-    @SerializedName("name")
-    val name: String,
-    @SerializedName("token")
-    val token: String = "",
-    @SerializedName("time")
-    val time: String = ""
+    val id: Int,
+    val uuid: String,
+    val gameId: Int,
+    val sender: Player
 )

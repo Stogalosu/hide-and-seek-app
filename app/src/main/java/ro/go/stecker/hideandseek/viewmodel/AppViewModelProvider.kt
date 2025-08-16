@@ -14,7 +14,7 @@ object AppViewModelProvider {
         }
 
         initializer {
-            HiderViewModel(hideAndSeekApplication().container.deckRepository)
+            HiderViewModel(hideAndSeekApplication().container.deckRepository, hideAndSeekApplication().container.preferencesRepository, hideAndSeekApplication().container.cloudRepository)
         }
 
         initializer {

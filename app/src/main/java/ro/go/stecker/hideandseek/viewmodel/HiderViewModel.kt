@@ -1,6 +1,5 @@
 package ro.go.stecker.hideandseek.viewmodel
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
@@ -9,23 +8,23 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import retrofit2.Response
+import kotlinx.coroutines.launch
 import ro.go.stecker.hideandseek.data.Card
 import ro.go.stecker.hideandseek.data.DeckUiState
 import ro.go.stecker.hideandseek.data.HiderUiState
+import ro.go.stecker.hideandseek.data.PreferencesRepository
 import ro.go.stecker.hideandseek.data.SelectMode
-import ro.go.stecker.hideandseek.data.SentCard
+import ro.go.stecker.hideandseek.data.UiState
 import ro.go.stecker.hideandseek.data.database.DeckRepository
+import ro.go.stecker.hideandseek.data.firestore.CloudRepository
 import ro.go.stecker.hideandseek.data.isPlayable
-import ro.go.stecker.hideandseek.data.toSentCard
-import ro.go.stecker.hideandseek.network.CardApi
 import ro.go.stecker.hideandseek.ui.screens.DrawType
-import java.io.IOException
 import kotlin.random.Random
 
-class HiderViewModel(val deckRepository: DeckRepository): ViewModel() {
+class HiderViewModel(private val deckRepository: DeckRepository, private val preferencesRepository: PreferencesRepository, private val cloudRepository: CloudRepository): ViewModel() {
 
     /*
         StateFlow declarations
@@ -33,6 +32,8 @@ class HiderViewModel(val deckRepository: DeckRepository): ViewModel() {
 
     private val _hiderUiState = MutableStateFlow(HiderUiState())
     val hiderUiState: StateFlow<HiderUiState> = _hiderUiState.asStateFlow()
+
+    private val _uiState = MutableStateFlow(UiState())
 
     var deckUiState: StateFlow<DeckUiState> =
         combine(
@@ -42,9 +43,25 @@ class HiderViewModel(val deckRepository: DeckRepository): ViewModel() {
             DeckUiState(playerDeck = playerDeck, cardDeck = cardDeck)
         }.stateIn(
             scope = viewModelScope,
-            started = SharingStarted.Companion.WhileSubscribed(),
+            started = SharingStarted.WhileSubscribed(),
             initialValue = DeckUiState()
         )
+
+    init {
+        viewModelScope.launch {
+            combine(
+                preferencesRepository.gameState.shareIn(viewModelScope, SharingStarted.Eagerly),
+                preferencesRepository.gameId.shareIn(viewModelScope, SharingStarted.Eagerly),
+                preferencesRepository.player.shareIn(viewModelScope, SharingStarted.Eagerly)
+            ) { gameState, gameId, playerName ->
+                UiState(
+                    gameState = gameState,
+                    gameId = gameId,
+                    player = playerName
+                )
+            }.collect { value -> _uiState.value = value }
+        }
+    }
 
     /*
         UI methods
@@ -101,7 +118,7 @@ class HiderViewModel(val deckRepository: DeckRepository): ViewModel() {
         val totalWeight = deckUiState.value.cardDeck.sumOf { it.probability }
         var random = 0
         try {
-            random = Random.Default.nextInt(1, totalWeight)
+            random = Random.nextInt(1, totalWeight)
         } catch (e: IllegalArgumentException) {
 
         }
@@ -151,16 +168,17 @@ class HiderViewModel(val deckRepository: DeckRepository): ViewModel() {
 
     suspend fun deleteCard(uuid: String) = deckRepository.deleteCard(uuid)
 
-    suspend fun playCard(card: Card, context: Context): Response<SentCard>? {
+    fun playCard(card: Card, onDone: (Boolean) -> Unit) {
         if(card.id == 17) updateOverflowingChalice() /*If card is "Curse of the overflowing chalice"*/
 
         if(card.isPlayable()) {
-            try {
-                return CardApi.retrofitService.newCard(card.toSentCard(context))
-            } catch (e: IOException) {
-                return null
-            }
-        } else throw IllegalStateException()
+            cloudRepository.playCard(
+                gameId = _uiState.value.gameId,
+                sender = _uiState.value.player,
+                card = card,
+                onDone = onDone
+            )
+        }
     }
 
 

@@ -7,6 +7,10 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
+import com.google.firebase.firestore.toObjects
+import ro.go.stecker.hideandseek.data.Card
+import ro.go.stecker.hideandseek.data.SentCard
+import ro.go.stecker.hideandseek.data.toSentCard
 
 
 interface CloudRepo {
@@ -15,17 +19,23 @@ interface CloudRepo {
     fun updatePlayerType(player: Player, newType: PlayerType)
     fun getAllPlayersInGame(gameId: Int, onSuccess: (List<Player>) -> Unit)
     fun newGame(game: Game)
-    fun addPlayerToGame(gameId: Int, player: Player, onSuccess: () -> Unit, onFail: () -> Unit)
+    fun addPlayerToGame(gameId: Int, player: Player, onDone: (Boolean) -> Unit)
     fun removePlayerFromGame(gameId: Int, player: Player)
     fun startGame(gameId: Int)
-    fun isGameStarted(gameId: Int, onSuccess: (Boolean) -> Unit, onFail: () -> Unit)
+    fun isGameStarted(gameId: Int, onSuccess: (Boolean) -> Unit, onFailure: () -> Unit)
     fun deleteGame(id: Int)
+    fun playCard(gameId: Int, sender: Player, card: Card, onDone: (Boolean) -> Unit)
     fun addPlayerListener(gameId: Int, onChange: (List<Player>) -> Unit): ListenerRegistration
     fun addGameStartListener(gameId: Int, onChange: (Boolean) -> Unit): ListenerRegistration
+    fun addCardListener(gameId: Int, receiver: Player, onChange: (List<SentCard>) -> Unit): ListenerRegistration
 }
 
 class CloudRepository: CloudRepo {
     val db = Firebase.firestore
+
+    /*
+        Player methods
+     */
 
     override fun createPlayer(player: Player) {
         db.collection("players").document(player.uuid).set(player)
@@ -46,14 +56,18 @@ class CloudRepository: CloudRepo {
             }
     }
 
+    /*
+        Game methods
+     */
+
     override fun newGame(game: Game) {
         db.collection("games").document(game.id.toString()).set(game)
     }
 
-    override fun addPlayerToGame(gameId: Int, player: Player, onSuccess: () -> Unit, onFail: () -> Unit) {
+    override fun addPlayerToGame(gameId: Int, player: Player, onDone: (Boolean) -> Unit) {
         db.collection("games").document(gameId.toString()).update("players", FieldValue.arrayUnion(player))
-            .addOnSuccessListener { onSuccess() }
-            .addOnFailureListener { onFail() }
+            .addOnSuccessListener { onDone(true) }
+            .addOnFailureListener { onDone(false) }
     }
 
     override fun removePlayerFromGame(gameId: Int, player: Player) {
@@ -66,17 +80,37 @@ class CloudRepository: CloudRepo {
         db.collection("games").document(gameId.toString()).update("started", true)
     }
 
-    override fun isGameStarted(gameId: Int, onSuccess: (Boolean) -> Unit, onFail: () -> Unit) {
+    override fun isGameStarted(gameId: Int, onSuccess: (Boolean) -> Unit, onFailure: () -> Unit) {
         db.collection("games").document(gameId.toString()).get()
             .addOnSuccessListener { doc ->
                 doc.toObject<Game>()?.started?.let { onSuccess(it) }
             }
-            .addOnFailureListener { onFail() }
+            .addOnFailureListener { onFailure() }
     }
 
     override fun deleteGame(id: Int) {
         db.collection("games").document(id.toString()).delete()
     }
+
+    /*
+        Cards methods
+     */
+
+    override fun playCard(
+        gameId: Int,
+        sender: Player,
+        card: Card,
+        onDone: (Boolean) -> Unit
+    ) {
+        db.collection("cards").document(card.uuid).set(card.toSentCard(gameId, sender))
+            .addOnSuccessListener { onDone(true) }
+            .addOnFailureListener { onDone(false) }
+            .addOnCanceledListener { onDone(false) }
+    }
+
+    /*
+        Listener methods
+     */
 
     override fun addPlayerListener(gameId: Int, onChange: (List<Player>) -> Unit): ListenerRegistration {
         return db.collection("games").document(gameId.toString()).addSnapshotListener { snapshot, e ->
@@ -102,5 +136,18 @@ class CloudRepository: CloudRepo {
                 snapshot.toObject<Game>()?.started?.let { onChange(it) }
             }
         }
+    }
+
+    override fun addCardListener(gameId: Int, receiver: Player, onChange: (List<SentCard>) -> Unit): ListenerRegistration {
+        return db.collection("cards")
+            .whereEqualTo("receiver", receiver)
+            .addSnapshotListener { value, e ->
+                if(e != null) {
+                    Log.w(TAG, "Listen failed.", e)
+                    return@addSnapshotListener
+                }
+
+                onChange(value!!.toObjects<SentCard>())
+            }
     }
 }

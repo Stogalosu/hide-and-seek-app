@@ -1,7 +1,6 @@
 package ro.go.stecker.hideandseek.ui
 
 import android.content.ClipData
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -170,7 +169,6 @@ fun TopAppBarDropdownMenu(
                             players = it
                             expanded = false
                             playersDialog = true
-                            Log.d("test", players.toString())
                         }
                     }
                 }

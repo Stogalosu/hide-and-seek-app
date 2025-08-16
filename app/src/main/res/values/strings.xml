@@ -22,7 +22,6 @@
     <string name="no_cards_left">No cards left!</string>
     <string name="no_cards_dialog">You did it! You reached the end of the pack! Play the cards you have or start a new game.</string>
     <string name="got_it">Got it!</string>
-    <string name="connecting_to_server">Connecting to server…</string>
     <string name="no_internet">No internet connection!</string>
     <string name="no_internet_dialog">You don\'t have a working internet connection! If you\'re a hider, you won\'t be able to play cards and if you\'re a seeker, you won\'t be able to receive curses. You can monitor your connection by looking in the upper-right corner.</string>
     <string name="card">Card</string>
@@ -72,7 +71,11 @@
     <string name="please_select_2_cards">Please select 2 cards!</string>
     <string name="players">Players</string>
     <string name="close">Close</string>
-    
+    <string name="play_card">Play card</string>
+    <string name="play_card_question">Do you want to play this card?</string>
+    <string name="failed_to_play_card">Failed to play card</string>
+    <string name="failed_to_play_card_text">Couldn\'t play card. Check cloud database!</string>
+
     <string name="curse_bad_influencer">Curse of the bad influencer</string>
     <string name="curse_bird_guide">Curse of the bird guide</string>
     <string name="curse_distant_cuisine">Curse of the distant cuisine</string>

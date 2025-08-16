@@ -42,6 +42,7 @@ fun MainScreen(
                 onDetailsClick = onDetailsClick,
                 viewModel = viewModel,
                 hiderViewModel = hiderViewModel,
+                uiState = uiState,
                 hiderUiState = hiderUiState,
                 deckUiState = deckUiState,
                 sharedTransitionScope = sharedTransitionScope,

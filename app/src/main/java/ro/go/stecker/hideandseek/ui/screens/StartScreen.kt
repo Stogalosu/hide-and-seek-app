@@ -147,7 +147,7 @@ fun StartScreen(
                     val id = viewModel.newGame(tempPlayerType)
                     listener = viewModel.addPlayerListener(
                         gameId = id,
-                        onChange = { it ->
+                        onChange = {
                             val newPlayers = it.toMutableList()
                             newPlayers.removeIf { item -> item.uuid == uiState.player.uuid }
                             players = newPlayers
@@ -266,14 +266,15 @@ fun StartScreen(
                                         viewModel.joinGame(
                                             gameId = gameId.toInt(),
                                             playerType = tempPlayerType,
-                                            onSuccess = {
-                                                coroutineScope.launch {
-                                                    newGameDialog = false
-                                                    viewModel.initAtGameStart(tempPlayerType)
-                                                    onGameStart()
-                                                }
-                                            },
-                                            onFail = { gameNotFound = true }
+                                            onDone = { success ->
+                                                if(success)
+                                                    coroutineScope.launch {
+                                                        newGameDialog = false
+                                                        viewModel.initAtGameStart(tempPlayerType)
+                                                        onGameStart()
+                                                    }
+                                                else gameNotFound = true
+                                            }
                                         )
                                     }
                                 )

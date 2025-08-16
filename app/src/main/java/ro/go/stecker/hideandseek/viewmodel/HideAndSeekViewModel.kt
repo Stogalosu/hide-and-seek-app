@@ -23,10 +23,10 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 class HideAndSeekViewModel(
-    val deckRepository: DeckRepository,
-    val preferencesRepository: PreferencesRepository,
-    val cloudRepository: CloudRepository,
-    val connectivityObserver: NetworkConnectivityObserver
+    private val deckRepository: DeckRepository,
+    private val preferencesRepository: PreferencesRepository,
+    private val cloudRepository: CloudRepository,
+    private val connectivityObserver: NetworkConnectivityObserver
 ): ViewModel() {
 
     private val _uiState = MutableStateFlow(UiState())
@@ -124,7 +124,7 @@ class HideAndSeekViewModel(
         return id
     }
 
-    fun joinGame(gameId: Int, playerType: PlayerType, onSuccess: () -> Unit, onFail: () -> Unit) {
+    fun joinGame(gameId: Int, playerType: PlayerType, onDone: (Boolean) -> Unit) {
         viewModelScope.launch {
             preferencesRepository.updateGameId(gameId)
         }
@@ -135,7 +135,7 @@ class HideAndSeekViewModel(
             type = playerType
         )
 
-        cloudRepository.addPlayerToGame(gameId = gameId, player = player, onSuccess = onSuccess, onFail = onFail)
+        cloudRepository.addPlayerToGame(gameId = gameId, player = player, onDone = onDone)
     }
 
     fun addPlayerListener(gameId: Int, onChange: (List<Player>) -> Unit) = cloudRepository.addPlayerListener(gameId, onChange)
