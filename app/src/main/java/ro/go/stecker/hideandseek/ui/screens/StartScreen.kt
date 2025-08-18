@@ -246,6 +246,7 @@ fun StartScreen(
                                         gameId = it
                                         gameNotFound = false
                                     },
+                                    singleLine = true,
                                     label = { Text(stringResource(R.string.enter_access_code)) },
                                     isError = isCodeInvalid && !gameId.isEmpty(),
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),

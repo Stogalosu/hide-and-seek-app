@@ -22,6 +22,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
 import kotlinx.coroutines.flow.distinctUntilChanged
+import ro.go.stecker.hideandseek.data.firestore.PlayerType
+import ro.go.stecker.hideandseek.data.toCard
 import ro.go.stecker.hideandseek.network.NetworkStatus
 import ro.go.stecker.hideandseek.ui.dialogs.NoInternetDialog
 import ro.go.stecker.hideandseek.viewmodel.AppViewModelProvider
@@ -52,7 +54,7 @@ fun HideAndSeekNavHost(
     modifier: Modifier = Modifier,
 ) {
     val hiderUiState by hiderViewModel.hiderUiState.collectAsState()
-    val deckUiState by hiderViewModel.deckUiState.collectAsState()
+    val seekerUiState by seekerViewModel.seekerUiState.collectAsState()
     val uiState by hideAndSeekViewModel.uiState.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -121,7 +123,7 @@ fun HideAndSeekNavHost(
                     hiderViewModel = hiderViewModel,
                     seekerViewModel = seekerViewModel,
                     hiderUiState = hiderUiState,
-                    deckUiState = deckUiState,
+                    seekerUiState = seekerUiState,
                     uiState = uiState,
                     sharedTransitionScope = this@SharedTransitionLayout,
                     animatedVisibilityScope = this@composable,
@@ -136,7 +138,10 @@ fun HideAndSeekNavHost(
                 val cardUuid = backStackEntry.arguments?.getString("cardUuid") ?: ""
 
                 DetailsScreen(
-                    card = deckUiState.playerDeck.first { it.uuid == cardUuid },
+                    card =
+                        if(uiState.player.type == PlayerType.Hider)
+                            hiderUiState.playerDeck.first { it.uuid == cardUuid }
+                        else seekerUiState.curses.first { it.uuid == cardUuid }.toCard(),
                     onBackClick = { navController.popBackStack() },
                     sharedTransitionScope = this@SharedTransitionLayout,
                     animatedVisibilityScope = this@composable

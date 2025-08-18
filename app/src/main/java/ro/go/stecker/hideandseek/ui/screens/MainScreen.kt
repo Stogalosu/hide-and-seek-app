@@ -6,9 +6,9 @@ import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import ro.go.stecker.hideandseek.data.DeckUiState
 import ro.go.stecker.hideandseek.data.GameState
 import ro.go.stecker.hideandseek.data.HiderUiState
+import ro.go.stecker.hideandseek.data.SeekerUiState
 import ro.go.stecker.hideandseek.data.UiState
 import ro.go.stecker.hideandseek.viewmodel.HideAndSeekViewModel
 import ro.go.stecker.hideandseek.viewmodel.HiderViewModel
@@ -24,7 +24,7 @@ fun MainScreen(
     hiderViewModel: HiderViewModel,
     seekerViewModel: SeekerViewModel,
     hiderUiState: HiderUiState,
-    deckUiState: DeckUiState,
+    seekerUiState: SeekerUiState,
     uiState: UiState,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
@@ -44,7 +44,6 @@ fun MainScreen(
                 hiderViewModel = hiderViewModel,
                 uiState = uiState,
                 hiderUiState = hiderUiState,
-                deckUiState = deckUiState,
                 sharedTransitionScope = sharedTransitionScope,
                 animatedVisibilityScope = animatedVisibilityScope,
                 snackbarHostState = snackbarHostState
@@ -53,8 +52,12 @@ fun MainScreen(
 
         GameState.Seeker -> {
             SeekerScreen(
-                seekerViewModel = seekerViewModel,
+                onDetailsClick = onDetailsClick,
                 viewModel = viewModel,
+                seekerViewModel = seekerViewModel,
+                seekerUiState = seekerUiState,
+                sharedTransitionScope = sharedTransitionScope,
+                animatedVisibilityScope = animatedVisibilityScope,
                 snackbarHostState = snackbarHostState
             )
         }

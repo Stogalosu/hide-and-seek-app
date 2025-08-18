@@ -6,14 +6,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ro.go.stecker.hideandseek.data.Card
-import ro.go.stecker.hideandseek.data.DeckUiState
 import ro.go.stecker.hideandseek.data.HiderUiState
 import ro.go.stecker.hideandseek.data.PreferencesRepository
 import ro.go.stecker.hideandseek.data.SelectMode
@@ -29,22 +27,21 @@ class HiderViewModel(private val deckRepository: DeckRepository, private val pre
     /*
         StateFlow declarations
      */
-
-    private val _hiderUiState = MutableStateFlow(HiderUiState())
-    val hiderUiState: StateFlow<HiderUiState> = _hiderUiState.asStateFlow()
-
     private val _uiState = MutableStateFlow(UiState())
 
-    var deckUiState: StateFlow<DeckUiState> =
+    private val _hiderUiState = MutableStateFlow(HiderUiState())
+
+    var hiderUiState: StateFlow<HiderUiState> =
         combine(
             deckRepository.getPlayerDeckStream(),
-            deckRepository.getCardDeckStream()
-        ) { playerDeck, cardDeck ->
-            DeckUiState(playerDeck = playerDeck, cardDeck = cardDeck)
+            deckRepository.getCardDeckStream(),
+            _hiderUiState
+        ) { playerDeck, cardDeck, _hiderState ->
+            _hiderState.copy(playerDeck = playerDeck, cardDeck = cardDeck)
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(),
-            initialValue = DeckUiState()
+            initialValue = HiderUiState()
         )
 
     init {
@@ -70,7 +67,7 @@ class HiderViewModel(private val deckRepository: DeckRepository, private val pre
     fun setUuidToDelete(uuid: String) {
         _hiderUiState.update { currentState ->
             currentState.copy(
-                uuidToDelete = uuid
+                tempUuid = uuid
             )
         }
     }
@@ -91,7 +88,7 @@ class HiderViewModel(private val deckRepository: DeckRepository, private val pre
         if(_hiderUiState.value.selectedCards.isNotEmpty() && confirm)
             when (_hiderUiState.value.selectCardMode) {
                 SelectMode.Duplicate -> {
-                    deleteCard(_hiderUiState.value.uuidToDelete)
+                    deleteCard(_hiderUiState.value.tempUuid)
                     addCardToDeck(Card(id = _hiderUiState.value.selectedCards.first().id))
                 }
 
@@ -115,7 +112,7 @@ class HiderViewModel(private val deckRepository: DeckRepository, private val pre
 
     suspend fun pickRandomCard(): Card {
         delay(50)
-        val totalWeight = deckUiState.value.cardDeck.sumOf { it.probability }
+        val totalWeight = hiderUiState.value.cardDeck.sumOf { it.probability }
         var random = 0
         try {
             random = Random.nextInt(1, totalWeight)
@@ -123,7 +120,7 @@ class HiderViewModel(private val deckRepository: DeckRepository, private val pre
 
         }
         var cumulative = 0
-        for(card in deckUiState.value.cardDeck) {
+        for(card in hiderUiState.value.cardDeck) {
             cumulative += card.probability
             if(random <= cumulative && card.probability > 0) {
                 deckRepository.updateCardProbability(card)
@@ -187,7 +184,7 @@ class HiderViewModel(private val deckRepository: DeckRepository, private val pre
             //Duplicate Card
             27 -> {
                 _hiderUiState.update {
-                    it.copy(selectCardMode = SelectMode.Duplicate, uuidToDelete = card.uuid)
+                    it.copy(selectCardMode = SelectMode.Duplicate, tempUuid = card.uuid)
                 }
                 return true
             }
@@ -195,7 +192,7 @@ class HiderViewModel(private val deckRepository: DeckRepository, private val pre
             //Discard 1, draw 2
             29 -> {
                 _hiderUiState.update {
-                    it.copy(selectCardMode = SelectMode.Discard1Draw2, uuidToDelete = card.uuid)
+                    it.copy(selectCardMode = SelectMode.Discard1Draw2, tempUuid = card.uuid)
                 }
                 return true
             }
@@ -203,7 +200,7 @@ class HiderViewModel(private val deckRepository: DeckRepository, private val pre
             //Discard 2, draw 3
             30 -> {
                 _hiderUiState.update {
-                    it.copy(selectCardMode = SelectMode.Discard2Draw3, uuidToDelete = card.uuid)
+                    it.copy(selectCardMode = SelectMode.Discard2Draw3, tempUuid = card.uuid)
                 }
                 return true
             }

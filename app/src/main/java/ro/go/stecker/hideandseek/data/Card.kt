@@ -68,8 +68,12 @@ fun Card.toSentCard(gameId: Int, sender: Player): SentCard {
 }
 
 data class SentCard(
-    val id: Int,
-    val uuid: String,
-    val gameId: Int,
-    val sender: Player
+    val id: Int = 0,
+    val uuid: String = "",
+    val gameId: Int = 0,
+    val sender: Player = Player()
 )
+
+fun SentCard.toCard(): Card {
+    return Card(uuid = this.uuid, id = this.id)
+}

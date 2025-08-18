@@ -25,9 +25,10 @@ interface CloudRepo {
     fun isGameStarted(gameId: Int, onSuccess: (Boolean) -> Unit, onFailure: () -> Unit)
     fun deleteGame(id: Int)
     fun playCard(gameId: Int, sender: Player, card: Card, onDone: (Boolean) -> Unit)
+    fun dismissCurse(uuid: String)
     fun addPlayerListener(gameId: Int, onChange: (List<Player>) -> Unit): ListenerRegistration
     fun addGameStartListener(gameId: Int, onChange: (Boolean) -> Unit): ListenerRegistration
-    fun addCardListener(gameId: Int, receiver: Player, onChange: (List<SentCard>) -> Unit): ListenerRegistration
+    fun addCardListener(gameId: Int, onChange: (List<SentCard>) -> Unit): ListenerRegistration
 }
 
 class CloudRepository: CloudRepo {
@@ -108,6 +109,10 @@ class CloudRepository: CloudRepo {
             .addOnCanceledListener { onDone(false) }
     }
 
+    override fun dismissCurse(uuid: String) {
+        db.collection("cards").document(uuid).delete()
+    }
+
     /*
         Listener methods
      */
@@ -138,9 +143,9 @@ class CloudRepository: CloudRepo {
         }
     }
 
-    override fun addCardListener(gameId: Int, receiver: Player, onChange: (List<SentCard>) -> Unit): ListenerRegistration {
+    override fun addCardListener(gameId: Int, onChange: (List<SentCard>) -> Unit): ListenerRegistration {
         return db.collection("cards")
-            .whereEqualTo("receiver", receiver)
+            .whereEqualTo("gameId", gameId)
             .addSnapshotListener { value, e ->
                 if(e != null) {
                     Log.w(TAG, "Listen failed.", e)

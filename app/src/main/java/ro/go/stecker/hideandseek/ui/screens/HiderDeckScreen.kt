@@ -2,19 +2,15 @@ package ro.go.stecker.hideandseek.ui.screens
 
 import androidx.compose.ui.graphics.Color
 import androidx.activity.compose.BackHandler
-import androidx.annotation.IntRange
-import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Column
 import ro.go.stecker.hideandseek.R
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Check
@@ -31,7 +27,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SnackbarHost
@@ -41,7 +36,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -51,13 +45,11 @@ import kotlinx.coroutines.launch
 import ro.go.stecker.hideandseek.data.Card
 import ro.go.stecker.hideandseek.data.HiderUiState
 import ro.go.stecker.hideandseek.viewmodel.HiderViewModel
-import ro.go.stecker.hideandseek.data.DeckUiState
 import ro.go.stecker.hideandseek.getActivity
 import ro.go.stecker.hideandseek.ui.navigation.HideAndSeekScreen
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -68,7 +60,8 @@ import ro.go.stecker.hideandseek.data.getCardWithUuid
 import ro.go.stecker.hideandseek.data.getName
 import ro.go.stecker.hideandseek.data.isPlayable
 import ro.go.stecker.hideandseek.network.NetworkStatus
-import ro.go.stecker.hideandseek.ui.CardImage
+import ro.go.stecker.hideandseek.ui.ButtonWithIcon
+import ro.go.stecker.hideandseek.ui.CardItem
 import ro.go.stecker.hideandseek.ui.HideAndSeekTopAppBar
 import ro.go.stecker.hideandseek.ui.infraFontFamily
 import ro.go.stecker.hideandseek.viewmodel.HideAndSeekViewModel
@@ -85,7 +78,6 @@ fun HiderDeckScreen(
     hiderViewModel: HiderViewModel,
     uiState: UiState,
     hiderUiState: HiderUiState,
-    deckUiState: DeckUiState,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
     snackbarHostState: SnackbarHostState
@@ -129,8 +121,8 @@ fun HiderDeckScreen(
             val current = LocalDensity.current
             ExtendedFloatingActionButton(
                 onClick = {
-                    if (deckUiState.playerDeck.size >= 6) tooManyCardsDialog = true
-                    else if (deckUiState.cardDeck.sumOf { it.probability } <= 3) noCardsDialog = true
+                    if (hiderUiState.playerDeck.size >= 6) tooManyCardsDialog = true
+                    else if (hiderUiState.cardDeck.sumOf { it.probability } <= 3) noCardsDialog = true
                     else onDrawCards()
                 },
                 modifier = Modifier
@@ -157,7 +149,6 @@ fun HiderDeckScreen(
             hiderViewModel = hiderViewModel,
             uiState = uiState,
             hiderUiState = hiderUiState,
-            deckUiState = deckUiState,
             fabHeight = fabHeight,
             contentPadding = innerPadding,
             onDetailsClick = onDetailsClick,
@@ -171,7 +162,7 @@ fun HiderDeckScreen(
 var discardCardDialog by mutableStateOf(false)
 var noCardsDialog by mutableStateOf(false)
 var tooManyCardsDialog by mutableStateOf(false)
-var playCardDialog by mutableStateOf(Pair(false, Card()))
+var playCardDialog by mutableStateOf(false)
 var failedCardPlay by mutableStateOf(false)
 var duplicateCardDialog by mutableStateOf(false)
 
@@ -181,7 +172,6 @@ fun HiderDeck(
     hiderViewModel: HiderViewModel,
     uiState: UiState,
     hiderUiState: HiderUiState,
-    deckUiState: DeckUiState,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     fabHeight: Dp,
     onDetailsClick: (String) -> Unit,
@@ -205,7 +195,7 @@ fun HiderDeck(
                         SelectMode.Discard2Draw3 ->
                             stringResource(R.string.discard_2_draw_3_card_dialog)
                         else ->
-                            stringResource(R.string.discard_card_dialog, stringResource(deckUiState.getCardWithUuid(hiderUiState.uuidToDelete).getName()))
+                            stringResource(R.string.discard_card_dialog, stringResource(hiderUiState.getCardWithUuid(hiderUiState.tempUuid).getName()))
                     }
                 )
                    },
@@ -217,7 +207,7 @@ fun HiderDeck(
                             if (hiderUiState.selectCardMode != SelectMode.NotActive) {
                                 hiderViewModel.endCardSelection(true)
                             }
-                            hiderViewModel.deleteCard(hiderUiState.uuidToDelete)
+                            hiderViewModel.deleteCard(hiderUiState.tempUuid)
                         }
                     }
                 ) {
@@ -263,14 +253,14 @@ fun HiderDeck(
     }
 
     //Dialog for playing a card
-    if(playCardDialog.first) {
+    if(playCardDialog) {
         AlertDialog(
-            onDismissRequest = { playCardDialog = Pair(false, playCardDialog.second) },
+            onDismissRequest = { playCardDialog = false },
             icon = { Icon(painterResource(R.drawable.ic_playing_cards), contentDescription = null) },
             title = { Text(stringResource(R.string.play_card)) },
             text = { Text(stringResource(R.string.play_card_question)) },
             dismissButton = {
-                TextButton(onClick = { playCardDialog = Pair(false, playCardDialog.second) }) {
+                TextButton(onClick = { playCardDialog = false }) {
                     Text(stringResource(R.string.cancel))
                 }
             },
@@ -279,18 +269,18 @@ fun HiderDeck(
                     onClick = {
                         coroutineScope.launch {
                             hiderViewModel.playCard(
-                                card = playCardDialog.second,
+                                card = hiderUiState.playerDeck.first { it.uuid == hiderUiState.tempUuid },
                                 onDone = { success ->
                                     if(success)
                                         coroutineScope.launch {
-                                            hiderViewModel.deleteCard(hiderUiState.uuidToDelete)
+                                            hiderViewModel.deleteCard(hiderUiState.tempUuid)
                                             snackbarHostState.showSnackbar("Successfully played card!")
                                         }
                                     else failedCardPlay = true
                                 }
                             )
                         }
-                        playCardDialog = Pair(false, Card())
+                        playCardDialog = false
                     }
                 ) { Text(text = stringResource(R.string.play), color = confirmGreen) }
             }
@@ -343,7 +333,7 @@ fun HiderDeck(
     }
 
     //The actual deck
-    if(!deckUiState.playerDeck.isEmpty()) {
+    if(hiderUiState.playerDeck.isNotEmpty()) {
         LazyVerticalGrid(
             columns = GridCells.Adaptive(minSize = 380.dp),
             modifier = Modifier
@@ -351,13 +341,11 @@ fun HiderDeck(
                 .padding(contentPadding)
                 .fillMaxSize()
         ) {
-            items(items = deckUiState.playerDeck, key = { it.uuid }) { card ->
+            items(items = hiderUiState.playerDeck, key = { it.uuid }) { card ->
                 Box(modifier = Modifier.animateItem()) {
                     CardItem(
                         card = card,
-                        uiState = uiState,
-                        hiderUiState = hiderUiState,
-                        hiderViewModel = hiderViewModel,
+                        buttons = { CardItemButtons(card, onDetailsClick, uiState, hiderUiState, hiderViewModel) },
                         onDetailsClick = onDetailsClick,
                         sharedTransitionScope = sharedTransitionScope,
                         animatedVisibilityScope = animatedVisibilityScope
@@ -385,171 +373,93 @@ fun HiderDeck(
     }
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun CardItem(
+private fun CardItemButtons(
     card: Card,
+    onDetailsClick: (String) -> Unit,
     uiState: UiState,
     hiderUiState: HiderUiState,
-    hiderViewModel: HiderViewModel,
-    onDetailsClick: (String) -> Unit,
-    sharedTransitionScope: SharedTransitionScope,
-    animatedVisibilityScope: AnimatedVisibilityScope
+    hiderViewModel: HiderViewModel
 ) {
-    val coroutineScope = rememberCoroutineScope()
-
-    with(sharedTransitionScope) {
-        Card(
-            modifier = Modifier
-                .sharedElement(
-                    sharedTransitionScope.rememberSharedContentState(key = "card-${card.uuid}"),
-                    animatedVisibilityScope = animatedVisibilityScope
-                )
-                .fillMaxWidth()
-                .padding(8.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                with(sharedTransitionScope) {
-                    CardImage(
-                        card = card,
+    Column(
+        modifier = Modifier.padding(32.dp)
+    ) {
+        when(hiderUiState.selectCardMode) {
+            SelectMode.Duplicate -> {
+                if(card.uuid != hiderUiState.tempUuid) {
+                    ButtonWithIcon(
+                        icon = Icons.Rounded.Check,
+                        text = R.string.select,
+                        color = confirmGreen,
                         onClick = {
-                            onDetailsClick(card.uuid)
-                        },
-                        clickable = true,
-                        imageModifier = Modifier
-                            .padding(5.dp)
-                            .size(height = 192.dp, width = 137.dp)
-                            .sharedElement(
-                                sharedTransitionScope.rememberSharedContentState(key = "image-${card.uuid}"),
-                                animatedVisibilityScope = animatedVisibilityScope
-                            )
-                            .clip(RoundedCornerShape(6)),
-                        cardModifier = Modifier
-                            .sharedElement(
-                                sharedTransitionScope.rememberSharedContentState(key = "border-${card.uuid}"),
-                                animatedVisibilityScope = animatedVisibilityScope
-                            )
+                            hiderViewModel.selectCard(card)
+                            duplicateCardDialog = true
+                        }
                     )
                 }
-                Spacer(modifier = Modifier.weight(1f))
-                Column(
-                    modifier = Modifier.padding(32.dp)
-                ) {
-                    when(hiderUiState.selectCardMode) {
-                        SelectMode.Duplicate -> {
-                            if(card.uuid != hiderUiState.uuidToDelete) {
-                                ButtonWithIcon(
-                                    icon = Icons.Rounded.Check,
-                                    text = R.string.select,
-                                    color = confirmGreen,
-                                    onClick = {
-                                        hiderViewModel.selectCard(card)
-                                        duplicateCardDialog = true
-                                    }
-                                )
-                            }
-                        }
+            }
 
-                        SelectMode.Discard1Draw2 -> {
-                            if(card.uuid != hiderUiState.uuidToDelete) {
-                                ButtonWithIcon(
-                                    icon = Icons.Rounded.Clear,
-                                    text = R.string.select,
-                                    color = discardRed,
-                                    onClick = {
-                                        hiderViewModel.selectCard(card)
-                                        discardCardDialog = true
-                                    }
-                                )
-                            }
+            SelectMode.Discard1Draw2 -> {
+                if(card.uuid != hiderUiState.tempUuid) {
+                    ButtonWithIcon(
+                        icon = Icons.Rounded.Clear,
+                        text = R.string.select,
+                        color = discardRed,
+                        onClick = {
+                            hiderViewModel.selectCard(card)
+                            discardCardDialog = true
                         }
-
-                        SelectMode.Discard2Draw3 -> {
-                            if(card.uuid != hiderUiState.uuidToDelete) {
-                                Checkbox(
-                                    checked = hiderUiState.selectedCards.contains(card),
-                                    onCheckedChange = { isNowChecked ->
-                                        if(isNowChecked) hiderViewModel.selectCard(card)
-                                        else hiderViewModel.deselectCard(card)
-                                    }
-                                )
-                            }
-                        }
-
-                        SelectMode.NotActive -> {
-                            if(card.isPlayable()) {
-                                ButtonWithIcon(
-                                    icon = Icons.Rounded.PlayArrow,
-                                    text = R.string.play,
-                                    color = confirmGreen,
-                                    onClick = {
-                                        if(!hiderViewModel.playSpecialCard(card))
-                                            if(uiState.networkStatus == NetworkStatus.Available) {
-                                                hiderViewModel.setUuidToDelete(card.uuid)
-                                                playCardDialog = Pair(true, card)
-                                            }
-                                    }
-                                )
-                            }
-                            ButtonWithIcon(
-                                icon = Icons.Rounded.Delete,
-                                text = R.string.discard,
-                                color = discardRed,
-                                size = 25,
-                                onClick = {
-                                    hiderViewModel.setUuidToDelete(card.uuid)
-                                    discardCardDialog = true
-                                }
-                            )
-                            ButtonWithIcon(
-                                icon = Icons.Rounded.Info,
-                                text = R.string.details,
-                                color = Color(207, 207, 207),
-                                size = 25,
-                                onClick = {
-                                    onDetailsClick(card.uuid)
-                                }
-                            )
-                        }
-                    }
+                    )
                 }
             }
-        }
-    }
-}
 
-@Composable
-fun ButtonWithIcon(
-    icon: ImageVector,
-    @StringRes text: Int,
-    color: Color = Color.White,
-    @IntRange(0, 26) size: Int =  26,
-    onClick: () -> Unit
-) {
-    TextButton(
-        onClick = onClick,
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceAround
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = stringResource(text),
-                tint = color,
-                modifier = Modifier
-                    .size(26.dp)
-                    .padding((26 - size).dp)
-            )
-            Spacer(modifier = Modifier.width(2.dp))
-            Text(
-                text = stringResource(text),
-                color = color,
-                fontSize = 16.sp
-            )
+            SelectMode.Discard2Draw3 -> {
+                if(card.uuid != hiderUiState.tempUuid) {
+                    Checkbox(
+                        checked = hiderUiState.selectedCards.contains(card),
+                        onCheckedChange = { isNowChecked ->
+                            if(isNowChecked) hiderViewModel.selectCard(card)
+                            else hiderViewModel.deselectCard(card)
+                        }
+                    )
+                }
+            }
+
+            SelectMode.NotActive -> {
+                if(card.isPlayable()) {
+                    ButtonWithIcon(
+                        icon = Icons.Rounded.PlayArrow,
+                        text = R.string.play,
+                        color = confirmGreen,
+                        onClick = {
+                            if(!hiderViewModel.playSpecialCard(card))
+                                if(uiState.networkStatus == NetworkStatus.Available) {
+                                    hiderViewModel.setUuidToDelete(card.uuid)
+                                    playCardDialog = true
+                                }
+                        }
+                    )
+                }
+                ButtonWithIcon(
+                    icon = Icons.Rounded.Delete,
+                    text = R.string.discard,
+                    color = discardRed,
+                    iconSize = 25,
+                    onClick = {
+                        hiderViewModel.setUuidToDelete(card.uuid)
+                        discardCardDialog = true
+                    }
+                )
+                ButtonWithIcon(
+                    icon = Icons.Rounded.Info,
+                    text = R.string.details,
+                    color = Color(207, 207, 207),
+                    iconSize = 25,
+                    onClick = {
+                        onDetailsClick(card.uuid)
+                    }
+                )
+            }
         }
     }
 }

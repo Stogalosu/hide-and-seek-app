@@ -75,6 +75,10 @@
     <string name="play_card_question">Do you want to play this card?</string>
     <string name="failed_to_play_card">Failed to play card</string>
     <string name="failed_to_play_card_text">Couldn\'t play card. Check cloud database!</string>
+    <string name="no_active_curses">You have no active curses!\nYet.</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="dismiss_curse">Dismiss curse</string>
+    <string name="dismiss_curse_question">Are you sure you want to dismiss this curse? Don\'t cheat!</string>
 
     <string name="curse_bad_influencer">Curse of the bad influencer</string>
     <string name="curse_bird_guide">Curse of the bird guide</string>

@@ -12,21 +12,23 @@ enum class SelectMode(val howMany: Int) {
 }
 
 data class HiderUiState(
-    val uuidToDelete: String = "",
+    val tempUuid: String = "",
     val drawnTempCards: List<Card> = listOf<Card>(),
     val overflowingChalice: Int = 0,
     var selectCardMode: SelectMode = SelectMode.NotActive,
-    var selectedCards: MutableList<Card> = mutableListOf<Card>()
-)
-
-data class DeckUiState(
+    var selectedCards: MutableList<Card> = mutableListOf<Card>(),
     val playerDeck: List<Card> = listOf(),
     val cardDeck: List<CardDetails> = listOf()
 )
 
-fun DeckUiState.getCardWithUuid(uuid: String): Card {
+fun HiderUiState.getCardWithUuid(uuid: String): Card {
     return playerDeck.first { it.uuid == uuid }
 }
+
+data class SeekerUiState(
+    val curses: List<SentCard> = listOf(),
+    val tempUuid: String = ""
+)
 
 data class UiState(
     val gameState: GameState = GameState.Loading,
