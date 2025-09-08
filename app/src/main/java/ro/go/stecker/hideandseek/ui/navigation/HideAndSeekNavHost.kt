@@ -1,5 +1,6 @@
 package ro.go.stecker.hideandseek.ui.navigation
 
+import android.Manifest
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.core.tween
@@ -21,7 +22,13 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.firebase.Firebase
+import com.google.firebase.messaging.messaging
 import kotlinx.coroutines.flow.distinctUntilChanged
+import ro.go.stecker.hideandseek.data.GameState
 import ro.go.stecker.hideandseek.data.firestore.PlayerType
 import ro.go.stecker.hideandseek.data.toCard
 import ro.go.stecker.hideandseek.network.NetworkStatus
@@ -44,7 +51,7 @@ enum class HideAndSeekScreen {
     NoInternetDialog
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalPermissionsApi::class)
 @Composable
 fun HideAndSeekNavHost(
     navController: NavHostController,
@@ -65,6 +72,26 @@ fun HideAndSeekNavHost(
             .collect { value ->
                 if(value == NetworkStatus.Unavailable) navController.navigate(HideAndSeekScreen.NoInternetDialog.name)
             }
+    }
+
+    val postNotificationPermission =
+        rememberPermissionState(Manifest.permission.POST_NOTIFICATIONS)
+
+    LaunchedEffect(Unit) {
+        if (!postNotificationPermission.status.isGranted)
+            postNotificationPermission.launchPermissionRequest()
+    }
+
+    LaunchedEffect(uiState.gameState) {
+        if(postNotificationPermission.status.isGranted) {
+            val topic =
+                when (uiState.gameState) {
+                    GameState.Hider -> uiState.gameId.toString() + "-hider"
+                    GameState.Seeker -> uiState.gameId.toString() + "-seeker"
+                    else -> ""
+                }
+            Firebase.messaging.subscribeToTopic(topic)
+        }
     }
 
     SharedTransitionLayout {

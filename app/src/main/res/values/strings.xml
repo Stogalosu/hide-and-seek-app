@@ -80,6 +80,26 @@
     <string name="dismiss_curse">Dismiss curse</string>
     <string name="dismiss_curse_question">Are you sure you want to dismiss this curse? Don\'t cheat!</string>
 
+    //Notifications
+    <string name="new_curse_title">New curse</string>
+    <string name="new_curse_1">Uh oh! You got cursed by %1$s… It\'s a bad one (%2$s)</string>
+    <string name="new_curse_2">Well, it was inevitable… You got the %2$s. Blame %1$s!</string>
+    <string name="new_curse_3">Bad luck! Thanks to %1$s, you now have to deal with the %2$s.</string>
+    <string name="new_curse_4">Your worst nightmare has come true! %1$s has thrown the %2$s upon you!</string>
+
+    <string name="expired_curse_title">Expired curse</string>
+    <string name="expired_curse_seeker_1">Yay! The %1$s is no longer active!</string>
+    <string name="expired_curse_seeker_2">Woo hoo! The %1$s has expired!</string>
+    <string name="expired_curse_seeker_3">The %1$s has expired! You can finally do what you want!</string>
+
+    <string name="expired_curse_hider_1">You should probably know that the %1$s you played has expired/was completed.</string>
+    <string name="expired_curse_hider_2">The %1$s you played is no longer active. You should play something else.</string>
+    <string name="expired_curse_hider_3">Wake up! The %1$s is no longer active!</string>
+
+    <string name="time_left_title">Curse expiry warning</string>
+    <string name="time_left_ten">The %1$s is going to expire in 10 minutes. Hang in there!</string>
+    <string name="time_left_five">Almost there! The %1$s is going to expire in 5 minutes.</string>
+
     <string name="curse_bad_influencer">Curse of the bad influencer</string>
     <string name="curse_bird_guide">Curse of the bird guide</string>
     <string name="curse_distant_cuisine">Curse of the distant cuisine</string>

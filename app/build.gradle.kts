@@ -58,16 +58,26 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.animation)
-    implementation(libs.firebase.firestore)
     ksp(libs.androidx.room.compiler)
 
-//  DataStore
+    //  DataStore
     implementation(libs.androidx.datastore.preferences)
+    // Firebase Cloud Messaging
 
     // Retrofit
     implementation(libs.retrofit)
     //Gson Converter: Converts JSON responses into Kotlin objects.
     implementation(libs.converter.gson)
+
+    //Firestore
+    implementation(libs.firebase.firestore)
+    implementation(platform(libs.firebase.bom))
+    //FCM
+    implementation(libs.firebase.messaging)
+
+    implementation("com.google.accompanist:accompanist-permissions:0.37.3")
+
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

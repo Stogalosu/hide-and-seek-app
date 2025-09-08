@@ -64,6 +64,7 @@ val CardsRepository: List<CardDetails> = listOf(
         id = 7,
         name = R.string.curse_gamblers_feet,
         type = CardType.Curse,
+        expiryMins = 20,
         image = R.drawable.curse_of_the_gamblers_feet,
         isPlayable = true,
         probability = 1
@@ -104,6 +105,7 @@ val CardsRepository: List<CardDetails> = listOf(
         id = 12,
         name = R.string.curse_jammed_door,
         type = CardType.Curse,
+        expiryMins = 30,
         image = R.drawable.curse_of_the_jammed_door,
         isPlayable = true,
         probability = 1
@@ -152,6 +154,7 @@ val CardsRepository: List<CardDetails> = listOf(
         id = 18,
         name = R.string.curse_right_turn,
         type = CardType.Curse,
+        expiryMins = 20,
         image = R.drawable.curse_of_the_right_turn,
         isPlayable = true,
         probability = 1
@@ -192,6 +195,7 @@ val CardsRepository: List<CardDetails> = listOf(
         id = 23,
         name = R.string.curse_voodoo_doll,
         type = CardType.Curse,
+        expiryMins = 10,
         image = R.drawable.curse_of_the_voodoo_doll,
         isPlayable = true,
         probability = 1
@@ -212,6 +216,7 @@ val CardsRepository: List<CardDetails> = listOf(
         type = CardType.PowerUp,
         description = R.string.randomize_question_desc,
         image = R.drawable.randomize_question,
+        isPlayable = true,
         probability = 4
     ),
     CardDetails(
@@ -220,6 +225,7 @@ val CardsRepository: List<CardDetails> = listOf(
         type = CardType.PowerUp,
         description = R.string.veto_question_desc,
         image = R.drawable.veto_question,
+        isPlayable = true,
         probability = 4
     ),
     CardDetails(

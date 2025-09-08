@@ -27,6 +27,8 @@ data class CardDetails(
     var id: Int = 0,
     @Ignore
     val type: CardType = CardType.TimeBonus,
+    @Ignore
+    val expiryMins: Int = 0,
     @Ignore @StringRes
     val name: Int = 0,
     @Ignore @StringRes
@@ -54,6 +56,10 @@ fun Card.getType(): CardType {
     return CardsRepository[this.id].type
 }
 
+fun Card.getExpiryMins(): Int {
+    return CardsRepository[this.id].expiryMins
+}
+
 fun Card.isPlayable(): Boolean {
     return CardsRepository[this.id].isPlayable
 }
@@ -63,7 +69,8 @@ fun Card.toSentCard(gameId: Int, sender: Player): SentCard {
         id = this.id,
         uuid = this.uuid,
         gameId = gameId,
-        sender = sender
+        sender = sender,
+        expiryMins = this.getExpiryMins()
     )
 }
 
@@ -71,7 +78,8 @@ data class SentCard(
     val id: Int = 0,
     val uuid: String = "",
     val gameId: Int = 0,
-    val sender: Player = Player()
+    val sender: Player = Player(),
+    val expiryMins: Int = 0
 )
 
 fun SentCard.toCard(): Card {
