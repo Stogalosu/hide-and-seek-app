@@ -21,7 +21,7 @@ interface CloudRepo {
     fun newGame(game: Game)
     fun addPlayerToGame(gameId: Int, player: Player, onDone: (Boolean) -> Unit)
     fun removePlayerFromGame(gameId: Int, player: Player)
-    fun startGame(gameId: Int)
+    fun updateGameState(gameId: Int, started: Boolean)
     fun isGameStarted(gameId: Int, onSuccess: (Boolean) -> Unit, onFailure: () -> Unit)
     fun deleteGame(id: Int)
     fun playCard(gameId: Int, sender: Player, card: Card, onDone: (Boolean) -> Unit)
@@ -77,8 +77,8 @@ class CloudRepository: CloudRepo {
             .addOnFailureListener { Log.d("test", "FAIL") }
     }
 
-    override fun startGame(gameId: Int) {
-        db.collection("games").document(gameId.toString()).update("started", true)
+    override fun updateGameState(gameId: Int, started: Boolean) {
+        db.collection("games").document(gameId.toString()).update("started", started)
     }
 
     override fun isGameStarted(gameId: Int, onSuccess: (Boolean) -> Unit, onFailure: () -> Unit) {

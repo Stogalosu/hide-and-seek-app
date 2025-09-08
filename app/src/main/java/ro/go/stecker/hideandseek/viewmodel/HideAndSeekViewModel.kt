@@ -66,6 +66,8 @@ class HideAndSeekViewModel(
     }
 
     fun exitGame(playerType: PlayerType = PlayerType.NotSet) {
+        cloudRepository.updateGameState(_uiState.value.gameId, false)
+
         viewModelScope.launch {
             preferencesRepository.endGame()
         }
@@ -140,5 +142,5 @@ class HideAndSeekViewModel(
 
     fun addPlayerListener(gameId: Int, onChange: (List<Player>) -> Unit) = cloudRepository.addPlayerListener(gameId, onChange)
 
-    fun startGame() = cloudRepository.startGame(_uiState.value.gameId)
+    fun startGame() = cloudRepository.updateGameState(_uiState.value.gameId, true)
 }

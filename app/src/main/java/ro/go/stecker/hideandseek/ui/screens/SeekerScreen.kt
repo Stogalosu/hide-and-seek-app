@@ -52,6 +52,7 @@ import ro.go.stecker.hideandseek.ui.CardItem
 import ro.go.stecker.hideandseek.viewmodel.SeekerViewModel
 
 var isGameStarted by mutableStateOf(false)
+var hasGameEnded by mutableStateOf(false)
 var dismissCurseDialog by mutableStateOf(false)
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -83,14 +84,25 @@ fun SeekerScreen(
 
         LaunchedEffect(Unit) {
             seekerViewModel.isGameStarted(
-                onSuccess = { isGameStarted = it },
+                onSuccess = {
+                    isGameStarted = it
+                    hasGameEnded = false
+                },
                 onFail = {}
             )
         }
 
         if(!isGameStarted) {
             LaunchedEffect(Unit) {
-                seekerViewModel.addGameStartListener(onChange = { isGameStarted = it })
+                seekerViewModel.addGameStartListener(
+                    onChange = {
+                        if(isGameStarted) {
+                            isGameStarted = false
+                            hasGameEnded = true
+                        }
+                        else isGameStarted = it
+                    }
+                )
             }
 
             Dialog(onDismissRequest = {}) {
@@ -98,14 +110,20 @@ fun SeekerScreen(
                     Column(
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(top = 24.dp, start = 24.dp, end = 24.dp, bottom = 16.dp)
+                        modifier = Modifier
+                            .padding(top = 24.dp, start = 24.dp, end = 24.dp, bottom = 16.dp)
+                            .fillMaxWidth()
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(24.dp)
                         ) {
-                            CircularProgressIndicator()
-                            Text(stringResource(R.string.waiting_to_start_game))
+                            if(!hasGameEnded) {
+                                CircularProgressIndicator()
+                                Text(stringResource(R.string.waiting_to_start_game))
+                            } else {
+                                Text(stringResource(R.string.hider_has_ended_game))
+                            }
                         }
                         TextButton(
                             onClick = { viewModel.exitGame() }

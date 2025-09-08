@@ -65,6 +65,7 @@
     <string name="couldnt_find_game">Couldn\'t find game. Please try again.</string>
     <string name="player_joined">%1$s joined</string>
     <string name="waiting_to_start_game">Waiting for hider to start the game…</string>
+    <string name="hider_has_ended_game">Hider has ended the game.</string>
     <string name="exit_game">Exit game</string>
     <string name="exit_game_question">Are you sure you want to exit this game?</string>
     <string name="copied_code">Copied code to clipboard.</string>
