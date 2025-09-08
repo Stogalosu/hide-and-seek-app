@@ -244,7 +244,10 @@ fun TopAppBarDropdownMenu(
                         containerColor = MaterialTheme.colorScheme.errorContainer,
                         contentColor = MaterialTheme.colorScheme.onErrorContainer
                     ),
-                    onClick = { onEndGame() }
+                    onClick = {
+                        confirmDialog = false
+                        onEndGame()
+                    }
                 ) {
                     if(uiState.player.type == PlayerType.Hider) Text(stringResource(R.string.end_game))
                     else Text(stringResource(R.string.exit_game))

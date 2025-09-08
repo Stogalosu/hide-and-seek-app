@@ -178,14 +178,11 @@ fun HideAndSeekNavHost(
             composable(route = HideAndSeekScreen.DrawCards.name) {
                 DrawCardsScreen(
                     viewModel = hideAndSeekViewModel,
-                    hiderViewModel = hiderViewModel,
                     uiState = hiderUiState,
-                    navigateUp = {
-                        navController.popBackStack(
-                            route = HideAndSeekScreen.MainScreen.name,
-                            inclusive = false
-                        )
-                    },
+                    hiderViewModel = hiderViewModel,
+                    preferencesUiState = uiState,
+                    navigateUp = { navController.popBackStack() },
+                    onNavigateToStartScreen = { navController.navigate(HideAndSeekScreen.StartScreen.name) },
                     snackbarHostState = snackbarHostState
                 )
             }
