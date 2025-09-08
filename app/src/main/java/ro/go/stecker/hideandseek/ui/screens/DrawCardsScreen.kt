@@ -42,7 +42,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -51,11 +50,8 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
-import ro.go.stecker.hideandseek.viewmodel.AppViewModelProvider
 import ro.go.stecker.hideandseek.R
 import ro.go.stecker.hideandseek.data.HiderUiState
 import ro.go.stecker.hideandseek.viewmodel.HiderViewModel
@@ -71,7 +67,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalConfiguration
 import kotlinx.coroutines.delay
 import ro.go.stecker.hideandseek.data.GameState
-import ro.go.stecker.hideandseek.data.PreferencesUiState
+import ro.go.stecker.hideandseek.data.UiState
 import ro.go.stecker.hideandseek.data.getDescription
 import ro.go.stecker.hideandseek.data.getName
 import ro.go.stecker.hideandseek.viewmodel.HideAndSeekViewModel
@@ -92,8 +88,8 @@ private var loseCardsDialog by mutableStateOf(false)
 fun DrawCardsScreen(
     viewModel: HideAndSeekViewModel,
     hiderViewModel: HiderViewModel,
-    uiState: HiderUiState,
-    preferencesUiState: PreferencesUiState,
+    hiderUiState: HiderUiState,
+    uiState: UiState,
     navigateUp: () -> Unit,
     onNavigateToStartScreen: () -> Unit,
     snackbarHostState: SnackbarHostState,
@@ -106,8 +102,8 @@ fun DrawCardsScreen(
 
     BackHandler { onBackClick() }
 
-    LaunchedEffect(preferencesUiState.isGameStarted) {
-        if(preferencesUiState.isGameStarted == GameState.NotStarted)
+    LaunchedEffect(uiState.gameState) {
+        if(uiState.gameState == GameState.NotStarted)
             onNavigateToStartScreen()
     }
 
@@ -129,7 +125,7 @@ fun DrawCardsScreen(
     ) {innerPadding ->
         DrawCards(
             viewModel = hiderViewModel,
-            uiState = uiState,
+            uiState = hiderUiState,
             navigateUp = navigateUp,
             contentPadding = innerPadding
         )
