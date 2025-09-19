@@ -13,7 +13,10 @@ The game was inspired by the [We Played Hide And Seek Across Japan]("https://you
 
 ## Usage
 
-When the seekers ask a question, depending on what type it is, the hiders draw 1, 2 or 3 cards and pick one of them to keep. The hiders can use the cards they have at any time, by tapping play and sharing the generated link. The link is an anti-cheat measure to prevent the hiders from playing the same card multiple times. 
+When starting a game, the hiders get a code that has to be shared with the other player(s). Once they are all in the game, the hiders can start it.
+In the app, there can only be one hider in the game, but an unlimited number of seekers can join.
+When the seekers ask a question (the app doesn't have this feature, yet), depending on what type it is, the hiders draw 1, 2 or 3 cards and pick one of them to keep. The hiders can use the cards they have at any time, by tapping play. Every seeker will receive the card and can dismiss it for everyone. Beware, the hiders receive notifications when you dismiss a curse!
+When the hiders exit the game (by tapping the three dots in the upper-right corner), the game will end. The seekers can join and exit anytime during the game.
 
 ## Screenshots
 
@@ -23,10 +26,6 @@ When the seekers ask a question, depending on what type it is, the hiders draw 1
 <img src="https://github.com/user-attachments/assets/7b9915ef-7762-47e3-870d-75eb305943c9" width="300">
 <img src="https://github.com/user-attachments/assets/378716c0-bda9-4c3b-9fa2-888b95765b37" width="300">
 <img src="https://github.com/user-attachments/assets/095be93d-599f-4acb-8b23-7e5535af581d" width="300">
-
-## Future Updates
-
-I'm currently working on a big update that introduces the ability to use the app as a seeker and receive the cards that the hiders play directly in the app.
 
 ## Disclaimer
 
