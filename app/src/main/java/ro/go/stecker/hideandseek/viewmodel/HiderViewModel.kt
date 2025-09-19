@@ -153,6 +153,10 @@ class HiderViewModel(private val deckRepository: DeckRepository, private val pre
         }
     }
 
+    fun resetOverflowingChalice() {
+        _hiderUiState.update { it.copy(overflowingChalice = 0) }
+    }
+
     fun updateOverflowingChalice() {
         _hiderUiState.update { currentState ->
             currentState.copy(

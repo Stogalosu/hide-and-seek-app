@@ -66,7 +66,6 @@ class HideAndSeekViewModel(
     }
 
     fun exitGame(playerType: PlayerType = PlayerType.NotSet) {
-        cloudRepository.updateGameState(_uiState.value.gameId, false)
 
         viewModelScope.launch {
             preferencesRepository.endGame()
@@ -76,16 +75,19 @@ class HideAndSeekViewModel(
             if(playerType != PlayerType.NotSet) playerType
             else _uiState.value.player.type
 
-        if(type == PlayerType.Hider)
-            cloudRepository.deleteGame(_uiState.value.gameId)
-        else cloudRepository.removePlayerFromGame(_uiState.value.gameId, _uiState.value.player)
+
+        cloudRepository.getAllPlayersInGame(
+            _uiState.value.gameId,
+            onSuccess = {
+                if(it.size <= 1) cloudRepository.deleteGame(_uiState.value.gameId)
+                else {
+                    cloudRepository.removePlayerFromGame(_uiState.value.gameId, _uiState.value.player)
+                    if(type == PlayerType.Hider)
+                        cloudRepository.updateGameState(_uiState.value.gameId, false)
+                }
+            }
+        )
     }
-
-    /*
-        UI Methods
-     */
-
-
 
     /*
         Cloud database methods

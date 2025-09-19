@@ -127,6 +127,7 @@ fun HideAndSeekNavHost(
                         navController.navigate(HideAndSeekScreen.MainScreen.name)
                     },
                     viewModel = hideAndSeekViewModel,
+                    hiderViewModel = hiderViewModel,
                     uiState = uiState,
                     snackbarHostState = snackbarHostState
                 )

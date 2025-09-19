@@ -54,10 +54,12 @@ import ro.go.stecker.hideandseek.ui.HideAndSeekTopAppBar
 import ro.go.stecker.hideandseek.ui.infraFontFamily
 import ro.go.stecker.hideandseek.ui.navigation.HideAndSeekScreen
 import ro.go.stecker.hideandseek.viewmodel.HideAndSeekViewModel
+import ro.go.stecker.hideandseek.viewmodel.HiderViewModel
 
 @Composable
 fun StartScreen(
     onGameStart: () -> Unit,
+    hiderViewModel: HiderViewModel,
     viewModel: HideAndSeekViewModel,
     uiState: UiState,
     snackbarHostState: SnackbarHostState,
@@ -264,6 +266,7 @@ fun StartScreen(
                                     confirmText = stringResource(R.string.join),
                                     confirmEnabled = !isCodeInvalid,
                                     onConfirmClick = {
+                                        hiderViewModel.resetOverflowingChalice()
                                         viewModel.joinGame(
                                             gameId = gameId.toInt(),
                                             playerType = tempPlayerType,
