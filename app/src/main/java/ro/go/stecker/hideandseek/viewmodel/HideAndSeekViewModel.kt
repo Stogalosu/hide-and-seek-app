@@ -2,6 +2,8 @@ package ro.go.stecker.hideandseek.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.Firebase
+import com.google.firebase.messaging.messaging
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -66,6 +68,13 @@ class HideAndSeekViewModel(
     }
 
     fun exitGame(playerType: PlayerType = PlayerType.NotSet) {
+        val topic =
+            when (_uiState.value.gameState) {
+                GameState.Hider -> _uiState.value.gameId.toString() + "-hider"
+                GameState.Seeker -> _uiState.value.gameId.toString() + "-seeker"
+                else -> ""
+            }
+        Firebase.messaging.unsubscribeFromTopic(topic)
 
         viewModelScope.launch {
             preferencesRepository.endGame()

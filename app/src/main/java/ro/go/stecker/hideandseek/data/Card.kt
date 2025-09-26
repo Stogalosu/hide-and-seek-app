@@ -2,6 +2,8 @@ package ro.go.stecker.hideandseek.data
 
 import androidx.annotation.*
 import androidx.room.*
+import com.google.firebase.Timestamp
+import com.google.firebase.firestore.ServerTimestamp
 import ro.go.stecker.hideandseek.R
 import ro.go.stecker.hideandseek.data.firestore.Player
 import kotlin.uuid.ExperimentalUuidApi
@@ -79,6 +81,8 @@ data class SentCard(
     val uuid: String = "",
     val gameId: Int = 0,
     val sender: Player = Player(),
+    @ServerTimestamp
+    val playedAt: Timestamp = Timestamp.now(),
     val expiryMins: Int = 0
 )
 

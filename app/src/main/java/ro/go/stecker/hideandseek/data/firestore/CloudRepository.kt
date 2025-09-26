@@ -73,8 +73,6 @@ class CloudRepository: CloudRepo {
 
     override fun removePlayerFromGame(gameId: Int, player: Player) {
         db.collection("games").document(gameId.toString()).update("players", FieldValue.arrayRemove(player))
-            .addOnSuccessListener { Log.d("test", "SUCCESS") }
-            .addOnFailureListener { Log.d("test", "FAIL") }
     }
 
     override fun updateGameState(gameId: Int, started: Boolean) {
@@ -91,6 +89,15 @@ class CloudRepository: CloudRepo {
 
     override fun deleteGame(id: Int) {
         db.collection("games").document(id.toString()).delete()
+
+        db.collection("cards").whereEqualTo("gameId", id).get()
+            .addOnSuccessListener { docs ->
+                val cards = docs.toObjects<SentCard>().toList()
+                cards.forEach {
+                    db.collection("cards").document(it.uuid).delete()
+                }
+            }
+
     }
 
     /*
@@ -103,8 +110,16 @@ class CloudRepository: CloudRepo {
         card: Card,
         onDone: (Boolean) -> Unit
     ) {
+        val updates = hashMapOf<String, Any>(
+            "playedAt" to FieldValue.serverTimestamp(),
+        )
+
         db.collection("cards").document(card.uuid).set(card.toSentCard(gameId, sender))
-            .addOnSuccessListener { onDone(true) }
+            .addOnSuccessListener {
+                db.collection("cards").document(card.uuid).update(updates)
+                    .addOnSuccessListener { onDone(true) }
+                    .addOnFailureListener { onDone(false) }
+            }
             .addOnFailureListener { onDone(false) }
             .addOnCanceledListener { onDone(false) }
     }
