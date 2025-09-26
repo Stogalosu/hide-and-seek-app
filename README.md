@@ -6,7 +6,7 @@ An Android app build with Jetpack Compose for a game of hide and seek across alm
 
 ## Installation
 
-Install the Hide and Seek app by downloading the latest version from the releases pages. The app only supports Android versions 12-15.
+Install the Hide and Seek app by downloading the latest version from the releases pages. The app only supports Android versions 12-15, but notifications may not work on Android 12.
 ## Game Rules
 
 The game was inspired by the [We Played Hide And Seek Across Japan]("https://youtu.be/PHjkSKQSzv4?si=p23ufGtchQvq1cTZ") YouTube video by JetLag The Game. You can find the rules of the game at 0:40 minutes.
