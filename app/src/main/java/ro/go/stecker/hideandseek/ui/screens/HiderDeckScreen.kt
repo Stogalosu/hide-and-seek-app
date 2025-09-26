@@ -54,10 +54,12 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import kotlinx.coroutines.delay
+import ro.go.stecker.hideandseek.data.CardType
 import ro.go.stecker.hideandseek.data.SelectMode
 import ro.go.stecker.hideandseek.data.UiState
 import ro.go.stecker.hideandseek.data.getCardWithUuid
 import ro.go.stecker.hideandseek.data.getName
+import ro.go.stecker.hideandseek.data.getType
 import ro.go.stecker.hideandseek.data.isPlayable
 import ro.go.stecker.hideandseek.network.NetworkStatus
 import ro.go.stecker.hideandseek.ui.ButtonWithIcon
@@ -106,10 +108,13 @@ fun HiderDeckScreen(
                 canNavigateBack = hiderUiState.selectCardMode != SelectMode.NotActive,
                 navigateUp = { coroutineScope.launch { hiderViewModel.endCardSelection(false) } },
                 currentScreen = HideAndSeekScreen.MainScreen,
-                doneButton = hiderUiState.selectCardMode != SelectMode.NotActive,
+                doneButton = hiderUiState.selectCardMode == SelectMode.Discard2Draw3 || hiderUiState.selectCardMode == SelectMode.Discard2,
                 onDoneButtonClick = {
                     coroutineScope.launch {
-                        if(hiderUiState.selectedCards.size == 2) discardCardDialog = true
+                        if(hiderUiState.selectedCards.size == 2) {
+                            if(hiderUiState.selectCardMode == SelectMode.Discard2Draw3) discardCardDialog = true
+                            else playCardDialog = true
+                        }
                         else snackbarHostState.showSnackbar(selectCardsText)
                     }
                 },
@@ -184,7 +189,11 @@ fun HiderDeck(
     //Dialog for deleting a card
     if(discardCardDialog) {
         AlertDialog(
-            onDismissRequest = { discardCardDialog = false },
+            onDismissRequest = {
+                if(hiderUiState.selectCardMode == SelectMode.Discard1Draw2 || hiderUiState.selectCardMode == SelectMode.Duplicate)
+                    hiderUiState.selectedCards.clear()
+                discardCardDialog = false
+            },
             icon = { Icon(Icons.Rounded.Delete, contentDescription = stringResource(R.string.discard_card)) },
             title = { Text(stringResource(R.string.discard_card)) },
             text = {
@@ -215,7 +224,13 @@ fun HiderDeck(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { discardCardDialog = false }) {
+                TextButton(
+                    onClick = {
+                        if(hiderUiState.selectCardMode == SelectMode.Discard1Draw2 || hiderUiState.selectCardMode == SelectMode.Duplicate)
+                            hiderUiState.selectedCards.clear()
+                        discardCardDialog = false
+                    }
+                ) {
                     Text(stringResource(R.string.cancel))
                 }
             }
@@ -255,12 +270,43 @@ fun HiderDeck(
     //Dialog for playing a card
     if(playCardDialog) {
         AlertDialog(
-            onDismissRequest = { playCardDialog = false },
+            onDismissRequest = {
+                when(hiderUiState.selectCardMode) {
+                    SelectMode.DiscardAll ->
+                        coroutineScope.launch { hiderViewModel.endCardSelection(false) }
+                    SelectMode.Discard1 ->
+                        hiderUiState.selectedCards.clear()
+                    else -> {}
+                }
+                playCardDialog = false
+            },
             icon = { Icon(painterResource(R.drawable.ic_playing_cards), contentDescription = null) },
             title = { Text(stringResource(R.string.play_card)) },
-            text = { Text(stringResource(R.string.play_card_question)) },
+            text = {
+                Column {
+                    Text(stringResource(R.string.play_card_question))
+                    when(hiderUiState.selectCardMode) {
+                        SelectMode.Discard1, SelectMode.Discard2, SelectMode.DiscardTimeBonus ->
+                            Text(text = stringResource(R.string.selected_cards_deleted), color = discardRed)
+                        SelectMode.DiscardAll ->
+                            Text(text = stringResource(R.string.all_cards_deleted), color = discardRed)
+                        else -> {}
+                    }
+                }
+            },
             dismissButton = {
-                TextButton(onClick = { playCardDialog = false }) {
+                TextButton(
+                    onClick = {
+                        when(hiderUiState.selectCardMode) {
+                            SelectMode.DiscardAll ->
+                                coroutineScope.launch { hiderViewModel.endCardSelection(false) }
+                            SelectMode.Discard1 ->
+                                hiderUiState.selectedCards.clear()
+                            else -> {}
+                        }
+                        playCardDialog = false
+                    }
+                ) {
                     Text(stringResource(R.string.cancel))
                 }
             },
@@ -268,6 +314,8 @@ fun HiderDeck(
                 TextButton(
                     onClick = {
                         coroutineScope.launch {
+                            if(hiderUiState.selectCardMode != SelectMode.NotActive)
+                                hiderViewModel.endCardSelection(true)
                             hiderViewModel.playCard(
                                 card = hiderUiState.playerDeck.first { it.uuid == hiderUiState.tempUuid },
                                 onDone = { success ->
@@ -305,7 +353,10 @@ fun HiderDeck(
     //Dialog for duplicating a card
     if(duplicateCardDialog) {
         AlertDialog(
-            onDismissRequest = { duplicateCardDialog = false },
+            onDismissRequest = {
+                hiderUiState.selectedCards.clear()
+                duplicateCardDialog = false
+            },
             icon = { Icon(Icons.Rounded.Check, contentDescription = stringResource(R.string.duplicate_card)) },
             title = { Text(stringResource(R.string.duplicate_card)) },
             text = { Text(stringResource(R.string.duplicate_card_dialog, stringResource(hiderUiState.selectedCards.first().getName()))) },
@@ -325,7 +376,12 @@ fun HiderDeck(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { duplicateCardDialog = false }) {
+                TextButton(
+                    onClick = {
+                        hiderUiState.selectedCards.clear()
+                        duplicateCardDialog = false
+                    }
+                ) {
                     Text(stringResource(R.string.cancel))
                 }
             }
@@ -420,6 +476,52 @@ private fun CardItemButtons(
                         onCheckedChange = { isNowChecked ->
                             if(isNowChecked) hiderViewModel.selectCard(card)
                             else hiderViewModel.deselectCard(card)
+                        }
+                    )
+                }
+            }
+
+            SelectMode.Discard1 -> {
+                if(card.uuid != hiderUiState.tempUuid) {
+                    ButtonWithIcon(
+                        icon = Icons.Rounded.Clear,
+                        text = R.string.select,
+                        color = discardRed,
+                        onClick = {
+                            hiderViewModel.selectCard(card)
+                            playCardDialog = true
+                        }
+                    )
+                }
+            }
+
+            SelectMode.Discard2 -> {
+                if(card.uuid != hiderUiState.tempUuid) {
+                    Checkbox(
+                        checked = hiderUiState.selectedCards.contains(card),
+                        onCheckedChange = { isNowChecked ->
+                            if(isNowChecked) hiderViewModel.selectCard(card)
+                            else hiderViewModel.deselectCard(card)
+                        }
+                    )
+                }
+            }
+
+            SelectMode.DiscardAll -> {
+                LaunchedEffect(Unit) {
+                    playCardDialog = true
+                }
+            }
+
+            SelectMode.DiscardTimeBonus -> {
+                if(card.getType() == CardType.TimeBonus) {
+                    ButtonWithIcon(
+                        icon = Icons.Rounded.Clear,
+                        text = R.string.select,
+                        color = discardRed,
+                        onClick = {
+                            hiderViewModel.selectCard(card)
+                            playCardDialog = true
                         }
                     )
                 }

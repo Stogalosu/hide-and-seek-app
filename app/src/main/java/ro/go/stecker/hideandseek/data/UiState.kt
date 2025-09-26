@@ -8,6 +8,10 @@ enum class SelectMode(val howMany: Int) {
     Duplicate(1),
     Discard1Draw2(1),
     Discard2Draw3(2),
+    Discard1(1),
+    Discard2(2),
+    DiscardAll(6),
+    DiscardTimeBonus(1),
     NotActive(0)
 }
 

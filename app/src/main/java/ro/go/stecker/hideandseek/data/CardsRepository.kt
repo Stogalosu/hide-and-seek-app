@@ -34,6 +34,7 @@ val CardsRepository: List<CardDetails> = listOf(
         type = CardType.Curse,
         image = R.drawable.curse_of_the_drained_brain,
         isPlayable = true,
+        selectMode = SelectMode.DiscardAll,
         probability = 1
     ),
     CardDetails(
@@ -42,6 +43,7 @@ val CardsRepository: List<CardDetails> = listOf(
         type = CardType.Curse,
         image = R.drawable.curse_of_the_egg_partner,
         isPlayable = true,
+        selectMode = SelectMode.Discard2,
         probability = 1
     ),
     CardDetails(
@@ -75,6 +77,7 @@ val CardsRepository: List<CardDetails> = listOf(
         type = CardType.Curse,
         image = R.drawable.curse_of_the_hidden_hangman,
         isPlayable = true,
+        selectMode = SelectMode.Discard2,
         probability = 1
     ),
     CardDetails(
@@ -108,6 +111,7 @@ val CardsRepository: List<CardDetails> = listOf(
         expiryMins = 30,
         image = R.drawable.curse_of_the_jammed_door,
         isPlayable = true,
+        selectMode = SelectMode.Discard2,
         probability = 1
     ),
     CardDetails(
@@ -148,6 +152,7 @@ val CardsRepository: List<CardDetails> = listOf(
         type = CardType.Curse,
         image = R.drawable.curse_of_the_overflowing_chalice,
         isPlayable = true,
+        selectMode = SelectMode.Discard1,
         probability = 1
     ),
     CardDetails(
@@ -157,6 +162,7 @@ val CardsRepository: List<CardDetails> = listOf(
         expiryMins = 20,
         image = R.drawable.curse_of_the_right_turn,
         isPlayable = true,
+        selectMode = SelectMode.Discard1,
         probability = 1
     ),
     CardDetails(
@@ -165,6 +171,7 @@ val CardsRepository: List<CardDetails> = listOf(
         type = CardType.Curse,
         image = R.drawable.curse_of_the_spotty_memory,
         isPlayable = true,
+        selectMode = SelectMode.DiscardTimeBonus,
         probability = 1
     ),
     CardDetails(
@@ -189,6 +196,7 @@ val CardsRepository: List<CardDetails> = listOf(
         type = CardType.Curse,
         image = R.drawable.curse_of_the_urban_explorer,
         isPlayable = true,
+        selectMode = SelectMode.Discard2,
         probability = 1
     ),
     CardDetails(
@@ -235,6 +243,7 @@ val CardsRepository: List<CardDetails> = listOf(
         description = R.string.duplicate_card_desc,
         image = R.drawable.duplicate_another_card,
         isPlayable = true,
+        selectMode = SelectMode.Duplicate,
         probability = 2
     ),
     CardDetails(
@@ -253,6 +262,7 @@ val CardsRepository: List<CardDetails> = listOf(
         description = R.string.discard_1_draw_2_desc,
         image = R.drawable.discard_1_draw_2,
         isPlayable = true,
+        selectMode = SelectMode.Discard1Draw2,
         probability = 4
     ),
     CardDetails(
@@ -262,6 +272,7 @@ val CardsRepository: List<CardDetails> = listOf(
         description = R.string.discard_2_draw_3_desc,
         image = R.drawable.discard_2_draw_3,
         isPlayable = true,
+        selectMode = SelectMode.Discard2Draw3,
         probability = 4
     ),
 

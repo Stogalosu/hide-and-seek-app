@@ -68,18 +68,6 @@ class HideAndSeekViewModel(
     }
 
     fun exitGame(playerType: PlayerType = PlayerType.NotSet) {
-        val topic =
-            when (_uiState.value.gameState) {
-                GameState.Hider -> _uiState.value.gameId.toString() + "-hider"
-                GameState.Seeker -> _uiState.value.gameId.toString() + "-seeker"
-                else -> ""
-            }
-        Firebase.messaging.unsubscribeFromTopic(topic)
-
-        viewModelScope.launch {
-            preferencesRepository.endGame()
-        }
-
         val type =
             if(playerType != PlayerType.NotSet) playerType
             else _uiState.value.player.type
@@ -96,6 +84,18 @@ class HideAndSeekViewModel(
                 }
             }
         )
+
+        val topic =
+            when (type) {
+                PlayerType.Hider -> _uiState.value.gameId.toString() + "-hider"
+                PlayerType.Seeker -> _uiState.value.gameId.toString() + "-seeker"
+                else -> ""
+            }
+        Firebase.messaging.unsubscribeFromTopic(topic)
+
+        viewModelScope.launch {
+            preferencesRepository.endGame()
+        }
     }
 
     /*

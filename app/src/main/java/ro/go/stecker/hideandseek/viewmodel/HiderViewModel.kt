@@ -18,6 +18,7 @@ import ro.go.stecker.hideandseek.data.SelectMode
 import ro.go.stecker.hideandseek.data.UiState
 import ro.go.stecker.hideandseek.data.database.DeckRepository
 import ro.go.stecker.hideandseek.data.firestore.CloudRepository
+import ro.go.stecker.hideandseek.data.getSelectMode
 import ro.go.stecker.hideandseek.data.isPlayable
 import ro.go.stecker.hideandseek.ui.screens.DrawType
 import kotlin.random.Random
@@ -87,20 +88,26 @@ class HiderViewModel(private val deckRepository: DeckRepository, private val pre
     suspend fun endCardSelection(confirm: Boolean) {
         if(_hiderUiState.value.selectedCards.isNotEmpty() && confirm)
             when (_hiderUiState.value.selectCardMode) {
+                SelectMode.NotActive -> return
+
                 SelectMode.Duplicate -> {
                     deleteCard(_hiderUiState.value.tempUuid)
                     addCardToDeck(Card(id = _hiderUiState.value.selectedCards.first().id))
                 }
 
-                SelectMode.NotActive -> return
-
-                else -> {
+                SelectMode.Discard1Draw2, SelectMode.Discard2Draw3 -> {
                     _hiderUiState.value.selectedCards.forEach { deleteCard(it.uuid) }
                     repeat(_hiderUiState.value.selectCardMode.howMany + 1) {
                         addCardToDeck(pickRandomCard())
                     }
                 }
+
+                else -> _hiderUiState.value.selectedCards.forEach { deleteCard(it.uuid) }
             }
+        else if(confirm && _hiderUiState.value.selectCardMode == SelectMode.DiscardAll) {
+            delay(1500)
+            deckRepository.clearDeck()
+        }
 
         _hiderUiState.update { it.copy(selectCardMode = SelectMode.NotActive) }
         _hiderUiState.value.selectedCards.clear()
@@ -184,32 +191,12 @@ class HiderViewModel(private val deckRepository: DeckRepository, private val pre
 
 
     fun playSpecialCard(card: Card): Boolean {
-        when(card.id) {
-            //Duplicate Card
-            27 -> {
-                _hiderUiState.update {
-                    it.copy(selectCardMode = SelectMode.Duplicate, tempUuid = card.uuid)
-                }
-                return true
+        val selectMode = card.getSelectMode()
+        if(selectMode != SelectMode.NotActive) {
+            _hiderUiState.update {
+                it.copy(selectCardMode = selectMode, tempUuid = card.uuid)
             }
-
-            //Discard 1, draw 2
-            29 -> {
-                _hiderUiState.update {
-                    it.copy(selectCardMode = SelectMode.Discard1Draw2, tempUuid = card.uuid)
-                }
-                return true
-            }
-
-            //Discard 2, draw 3
-            30 -> {
-                _hiderUiState.update {
-                    it.copy(selectCardMode = SelectMode.Discard2Draw3, tempUuid = card.uuid)
-                }
-                return true
-            }
-
-            else -> return false
-        }
+            return true
+        } else return false
     }
 }

@@ -39,6 +39,8 @@ data class CardDetails(
     val image: Int = 0,
     @Ignore
     val isPlayable: Boolean = false,
+    @Ignore
+    val selectMode: SelectMode = SelectMode.NotActive,
     var probability: Int = 1
 )
 
@@ -64,6 +66,10 @@ fun Card.getExpiryMins(): Int {
 
 fun Card.isPlayable(): Boolean {
     return CardsRepository[this.id].isPlayable
+}
+
+fun Card.getSelectMode(): SelectMode {
+    return CardsRepository[this.id].selectMode
 }
 
 fun Card.toSentCard(gameId: Int, sender: Player): SentCard {
